@@ -1,0 +1,46 @@
+export type SupportedLocale = 'tr' | 'en';
+
+const translations: Record<SupportedLocale, Record<string, string>> = {
+  tr: {
+    'widget.title': 'AI Asistanı',
+    'widget.placeholder': 'Mesajınızı yazın...',
+    'widget.send': 'Gönder',
+    'widget.close': 'Kapat',
+    'widget.open': 'Asistanı Aç',
+    'widget.branding': 'Liya AI ile güçlendirilmiştir',
+    'avatar.open': '3D Avatar Aç',
+    'avatar.close': '3D Avatar Kapat',
+    'avatar.loading': 'Avatar yükleniyor...',
+    'voice.start': 'Sesle giriş',
+    'voice.stop': 'Durdur',
+    'voice.notSupported': 'Tarayıcınız ses girişini desteklemiyor.',
+    'voice.permissionDenied': 'Mikrofon izni reddedildi.',
+    'file.upload': 'Dosya ekle',
+    'file.uploading': 'Yükleniyor...',
+    'file.tooLarge': 'Dosya çok büyük (max 20 MB).',
+    'chat.loading': 'Yükleniyor...',
+    'chat.error': 'Bir hata oluştu. Tekrar deneyin.',
+  },
+  en: {
+    'widget.title': 'AI Assistant',
+    'widget.placeholder': 'Type your message...',
+    'widget.send': 'Send',
+    'widget.close': 'Close',
+    'widget.open': 'Open Assistant',
+    'widget.branding': 'Powered by Liya AI',
+    'avatar.open': 'Open 3D Avatar',
+    'avatar.close': 'Close 3D Avatar',
+    'avatar.loading': 'Loading avatar...',
+    'voice.start': 'Voice input',
+    'voice.stop': 'Stop',
+    'voice.notSupported': 'Your browser does not support voice input.',
+    'voice.permissionDenied': 'Microphone permission denied.',
+    'file.upload': 'Attach file',
+    'file.uploading': 'Uploading...',
+    'file.tooLarge': 'File too large (max 20 MB).',
+    'chat.loading': 'Loading...',
+    'chat.error': 'Something went wrong. Please try again.',
+  },
+};
+
+export default translations;

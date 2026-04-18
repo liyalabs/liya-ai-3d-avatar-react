@@ -1,0 +1,107 @@
+:root {
+  --liya-primary: #6366f1;
+  --liya-primary-hover: #4f46e5;
+  --liya-secondary: #e5e7eb;
+  --liya-bg: #0f172a;
+  --liya-bg-secondary: #1e293b;
+  --liya-text: #f1f5f9;
+  --liya-text-secondary: #94a3b8;
+  --liya-text-muted: #64748b;
+  --liya-border: rgba(255, 255, 255, 0.08);
+  --liya-radius: 16px;
+  --liya-font: system-ui, -apple-system, sans-serif;
+}
+
+.liya-widget { font-family: var(--liya-font); box-sizing: border-box; }
+.liya-widget * { box-sizing: border-box; }
+
+.liya-chat-window {
+  background: var(--liya-bg);
+  border: 1px solid var(--liya-border);
+  border-radius: var(--liya-radius);
+  color: var(--liya-text);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.liya-header {
+  background: linear-gradient(135deg, var(--liya-primary), var(--liya-primary-hover));
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.liya-close-btn {
+  background: none; border: none; color: rgba(255,255,255,0.8);
+  cursor: pointer; font-size: 20px; padding: 0; line-height: 1;
+}
+.liya-close-btn:hover { color: #fff; }
+
+.liya-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.liya-bubble {
+  max-width: 80%; padding: 10px 14px; border-radius: 12px;
+  font-size: 14px; line-height: 1.5; word-break: break-word;
+}
+.liya-bubble--user {
+  align-self: flex-end; background: var(--liya-primary); color: #fff; border-bottom-right-radius: 4px;
+}
+.liya-bubble--assistant {
+  align-self: flex-start; background: var(--liya-bg-secondary); color: var(--liya-text); border-bottom-left-radius: 4px;
+}
+
+.liya-input-area {
+  padding: 12px 16px; border-top: 1px solid var(--liya-border);
+  display: flex; gap: 8px; align-items: flex-end;
+}
+
+.liya-input {
+  flex: 1; background: var(--liya-bg-secondary); border: 1px solid var(--liya-border);
+  border-radius: 10px; color: var(--liya-text); font-family: var(--liya-font);
+  font-size: 14px; padding: 10px 12px; resize: none; outline: none; max-height: 120px;
+}
+.liya-input::placeholder { color: var(--liya-text-muted); }
+
+.liya-send-btn {
+  background: var(--liya-primary); border: none; border-radius: 10px; color: #fff;
+  cursor: pointer; font-size: 18px; padding: 10px 14px; flex-shrink: 0; transition: background 0.15s;
+}
+.liya-send-btn:hover:not(:disabled) { background: var(--liya-primary-hover); }
+.liya-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.liya-fab {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--liya-primary), var(--liya-primary-hover));
+  border: none; color: #fff; cursor: pointer; font-size: 24px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.liya-fab:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5); }
+
+.liya-branding { text-align: center; font-size: 11px; color: var(--liya-text-muted); padding: 4px 0 8px; }
+
+.liya-loading-dots { display: flex; gap: 4px; align-items: center; padding: 8px 0; }
+.liya-loading-dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--liya-text-muted); animation: liya-bounce 1.2s infinite;
+}
+.liya-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.liya-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes liya-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.liya-icon-btn {
+  background: none; border: none; color: var(--liya-text-secondary);
+  cursor: pointer; padding: 6px; border-radius: 6px; font-size: 18px;
+  transition: color 0.15s, background 0.15s;
+}
+.liya-icon-btn:hover { color: var(--liya-text); background: var(--liya-bg-secondary); }
