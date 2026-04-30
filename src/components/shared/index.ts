@@ -1,6 +1,6 @@
 /**
  * ==================================================
- * ██╗     ██╗██╗   ██╗ █████╗
+ * ██╗     ██╗██╗   ██╗ █████╗ 
  * ██║     ██║╚██╗ ██╔╝██╔══██╗
  * ██║     ██║ ╚████╔╝ ███████║
  * ██║     ██║  ╚██╔╝  ██╔══██║
@@ -13,5 +13,10 @@
  * Connect          : liyalabs.com, info@liyalabs.com
  * ==================================================
  */
-export * from "./translations";
-export { useI18n } from "../hooks/useI18n";
+export { default as ChatInput } from './ChatInput'
+export { default as MessageBubble } from './MessageBubble'
+export { default as MessageList } from './MessageList'
+
+export type { ChatInputProps } from './ChatInput'
+export type { MessageBubbleProps } from './MessageBubble'
+export type { MessageListProps, MessageListHandle } from './MessageList'

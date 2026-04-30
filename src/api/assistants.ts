@@ -13,22 +13,25 @@
  * Connect          : liyalabs.com, info@liyalabs.com
  * ==================================================
  */
+// Liya AI Chat - Assistants API
+import { getClient } from './client'
+import type { ApiResponse, Assistant } from '../types'
 
-// Components
-export * from './components/widget'
-export * from './components/app'
-export * from './components/shared'
+export async function getAssistants(): Promise<Assistant[]> {
+  const client = getClient()
 
-// Hooks
-export * from './hooks/useChat'
-export * from './hooks/useVoice'
-export * from './hooks/useAvatarColors'
-export * from './hooks/useI18n'
-export * from './hooks/useSessions'
+  const response = await client.get<ApiResponse<Assistant[]>>(
+    '/api/v1/external/assistants/'
+  )
 
-// API & Types
-export * from './api'
-export * from './types'
+  if (response.data.status === 'error') {
+    throw new Error(response.data.message || 'Failed to get assistants')
+  }
 
-// Utils
-export * from './utils/color'
+  return response.data.data!
+}
+
+export async function getAssistant(assistantId: string): Promise<Assistant | null> {
+  const assistants = await getAssistants()
+  return assistants.find((a) => a.id === assistantId) || null
+}

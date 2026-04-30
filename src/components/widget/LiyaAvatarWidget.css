@@ -1,0 +1,607 @@
+.liya-ai-3d-avatar-react-widget {
+  position: fixed;
+  z-index: var(--liya-z-index, 9999);
+  font-family: var(--liya-font-family, system-ui, -apple-system, sans-serif);
+}
+
+.liya-ai-3d-avatar-react-widget--bottom-right {
+  bottom: var(--liya-offset-y, 20px);
+  right: var(--liya-offset-x, 20px);
+}
+
+.liya-ai-3d-avatar-react-widget--bottom-left {
+  bottom: var(--liya-offset-y, 20px);
+  left: var(--liya-offset-x, 20px);
+}
+
+/* Toggle Button */
+.liya-ai-3d-avatar-react-widget__toggle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: var(--liya-primary-color);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.liya-ai-3d-avatar-react-widget__toggle--open {
+  background: #9ca3af;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle--animated {
+  animation: liya-pulse 2s infinite;
+}
+
+@keyframes liya-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Chat Panel */
+.liya-ai-3d-avatar-react-widget__panel {
+  position: absolute;
+  width: 380px;
+  height: 550px;
+  max-height: calc(100vh - 100px);
+  background: var(--liya-bg-color);
+  border-radius: var(--liya-border-radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: liya-slide-up 0.3s ease;
+}
+
+@keyframes liya-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.liya-ai-3d-avatar-react-widget--bottom-right .liya-ai-3d-avatar-react-widget__panel {
+  bottom: 70px;
+  right: 0;
+}
+
+.liya-ai-3d-avatar-react-widget--bottom-left .liya-ai-3d-avatar-react-widget__panel {
+  bottom: 70px;
+  left: 0;
+}
+
+/* Upper section with avatar */
+.liya-ai-3d-avatar-react-widget__upper {
+  position: relative;
+  height: 240px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.liya-ai-3d-avatar-react-widget__avatar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Liquid Glass Header Overlay */
+.liya-ai-3d-avatar-react-widget__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.liya-ai-3d-avatar-react-widget__header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__header-avatar {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liya-ai-3d-avatar-react-widget__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.liya-ai-3d-avatar-react-widget__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__status-dot--loading {
+  animation: liya-pulse-dot 1.5s infinite;
+}
+
+@keyframes liya-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Header Buttons */
+.liya-ai-3d-avatar-react-widget__replay-btn,
+.liya-ai-3d-avatar-react-widget__settings-btn,
+.liya-ai-3d-avatar-react-widget__lang-btn,
+.liya-ai-3d-avatar-react-widget__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn:hover,
+.liya-ai-3d-avatar-react-widget__settings-btn:hover,
+.liya-ai-3d-avatar-react-widget__lang-btn:hover,
+.liya-ai-3d-avatar-react-widget__close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn--cancel {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn--cancel:hover {
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-btn--active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.liya-ai-3d-avatar-react-widget__lang-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0;
+  width: auto;
+  min-width: 32px;
+}
+
+/* Settings Panel */
+.liya-ai-3d-avatar-react-widget__settings-panel {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  max-height: 196px;
+  overflow-y: auto;
+  z-index: 20;
+  animation: liya-slide-down 0.2s ease;
+}
+
+@keyframes liya-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-section {
+  margin-bottom: 12px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset:hover {
+  transform: scale(1.1);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset--active {
+  border-color: white;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-color-row input {
+  width: 32px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-reset {
+  width: 100%;
+  padding: 6px;
+  margin-top: 8px;
+  background: rgba(99, 102, 241, 0.3);
+  color: white;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-reset:hover {
+  background: rgba(99, 102, 241, 0.4);
+  border-color: rgba(99, 102, 241, 0.7);
+}
+
+/* Branding */
+.liya-ai-3d-avatar-react-widget__branding {
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  border-top: 1px solid #e5e7eb;
+}
+
+.liya-ai-3d-avatar-react-widget__branding a {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.liya-ai-3d-avatar-react-widget__branding a:hover {
+  text-decoration: underline;
+}
+
+/* ===== KIOSK MODE ===== */
+.liya-ai-3d-avatar-react-kiosk {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0f172a;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+}
+
+.liya-ai-3d-avatar-react-kiosk__container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.liya-ai-3d-avatar-react-kiosk__scene-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.liya-ai-3d-avatar-react-kiosk__controls {
+  position: relative;
+  z-index: 10;
+  margin-top: auto;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
+}
+
+.liya-ai-3d-avatar-react-kiosk__messages {
+  width: 100%;
+  max-width: 600px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liya-ai-3d-avatar-react-kiosk__message {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: white;
+}
+
+.liya-ai-3d-avatar-react-kiosk__message.user {
+  background: rgba(99, 102, 241, 0.3);
+  border-left: 2px solid #6366f1;
+}
+
+.liya-ai-3d-avatar-react-kiosk__message.assistant {
+  background: rgba(59, 130, 246, 0.2);
+  border-left: 2px solid #3b82f6;
+}
+
+/* Status Indicator */
+.liya-ai-3d-avatar-react-kiosk__status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-dot--idle {
+  background: #10b981;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-dot--listening {
+  background: #f59e0b;
+  animation: liya-pulse-dot 1s infinite;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-dot--preparing {
+  background: #f59e0b;
+  animation: liya-pulse-dot 1.5s infinite;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-dot--speaking {
+  background: #ef4444;
+  animation: liya-pulse-dot 0.8s infinite;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-kiosk__status-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.liya-ai-3d-avatar-react-kiosk__lang-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0;
+  width: auto;
+  min-width: 32px;
+}
+
+/* Mic Button */
+.liya-ai-3d-avatar-react-kiosk__mic {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic:active {
+  transform: scale(0.95);
+}
+
+/* Hint text */
+.liya-ai-3d-avatar-react-kiosk__hint {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Message box toggle */
+.liya-ai-3d-avatar-react-kiosk__toggle-msg-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-kiosk__toggle-msg-btn:hover {
+  background: rgba(99, 102, 241, 0.4);
+  border-color: rgba(99, 102, 241, 0.7);
+  transform: scale(1.05);
+}
+
+/* Scrollbar styling */
+.liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

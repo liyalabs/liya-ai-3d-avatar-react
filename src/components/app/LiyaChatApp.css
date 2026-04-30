@@ -1,0 +1,151 @@
+.liya-ai-3d-avatar-react-app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: var(--liya-bg-color, #ffffff);
+  font-family: var(--liya-font-family, system-ui, -apple-system, sans-serif);
+  position: relative;
+  overflow: hidden;
+}
+
+.liya-ai-3d-avatar-react-app__mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--liya-bg-color, #ffffff);
+  border-bottom: 1px solid var(--liya-border-color, #e5e7eb);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 100;
+}
+
+.liya-ai-3d-avatar-react-app__menu-btn,
+.liya-ai-3d-avatar-react-app__new-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--liya-text-color, #374151);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.liya-ai-3d-avatar-react-app__menu-btn:hover,
+.liya-ai-3d-avatar-react-app__new-btn:hover {
+  background: var(--liya-bg-secondary, #f3f4f6);
+}
+
+.liya-ai-3d-avatar-react-app__mobile-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--liya-text-color, #374151);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liya-ai-3d-avatar-react-app__sidebar {
+  width: var(--liya-sidebar-width, 300px);
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.liya-ai-3d-avatar-react-app__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+}
+
+.liya-ai-3d-avatar-react-app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.liya-ai-3d-avatar-react-app__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--liya-border-color, #e5e7eb);
+  background: var(--liya-bg-color, #ffffff);
+}
+
+.liya-ai-3d-avatar-react-app__header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.liya-ai-3d-avatar-react-app__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--liya-primary-color, #6366f1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.liya-ai-3d-avatar-react-app__header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.liya-ai-3d-avatar-react-app__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--liya-text-color, #374151);
+}
+
+.liya-ai-3d-avatar-react-app__status {
+  font-size: 13px;
+  color: var(--liya-text-muted, #9ca3af);
+}
+
+@media (max-width: 768px) {
+  .liya-ai-3d-avatar-react-app__mobile-header {
+    display: flex;
+  }
+
+  .liya-ai-3d-avatar-react-app__sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .liya-ai-3d-avatar-react-app__sidebar--open {
+    transform: translateX(0);
+  }
+
+  .liya-ai-3d-avatar-react-app__overlay {
+    display: block;
+  }
+
+  .liya-ai-3d-avatar-react-app__main {
+    padding-top: 56px;
+  }
+
+  .liya-ai-3d-avatar-react-app__header {
+    display: none;
+  }
+}

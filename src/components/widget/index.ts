@@ -1,6 +1,6 @@
 /**
  * ==================================================
- * ██╗     ██╗██╗   ██╗ █████╗
+ * ██╗     ██╗██╗   ██╗ █████╗ 
  * ██║     ██║╚██╗ ██╔╝██╔══██╗
  * ██║     ██║ ╚████╔╝ ███████║
  * ██║     ██║  ╚██╔╝  ██╔══██║
@@ -13,5 +13,8 @@
  * Connect          : liyalabs.com, info@liyalabs.com
  * ==================================================
  */
-export * from "./translations";
-export { useI18n } from "../hooks/useI18n";
+export { default as LiyaAvatarWidget } from './LiyaAvatarWidget'
+export { default as LiyaChatWidget } from './LiyaChatWidget'
+
+export type { LiyaAvatarWidgetProps } from './LiyaAvatarWidget'
+export type { LiyaChatWidgetProps } from './LiyaChatWidget'

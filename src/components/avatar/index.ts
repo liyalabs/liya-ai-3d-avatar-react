@@ -1,6 +1,6 @@
 /**
  * ==================================================
- * ██╗     ██╗██╗   ██╗ █████╗
+ * ██╗     ██╗██╗   ██╗ █████╗ 
  * ██║     ██║╚██╗ ██╔╝██╔══██╗
  * ██║     ██║ ╚████╔╝ ███████║
  * ██║     ██║  ╚██╔╝  ██╔══██║
@@ -13,5 +13,8 @@
  * Connect          : liyalabs.com, info@liyalabs.com
  * ==================================================
  */
-export * from "./translations";
-export { useI18n } from "../hooks/useI18n";
+export { default as AvatarModal } from './AvatarModal'
+export { default as AvatarScene } from './AvatarScene'
+
+export type { AvatarModalProps } from './AvatarModal'
+export type { AvatarSceneProps, AvatarSceneHandle } from './AvatarScene'

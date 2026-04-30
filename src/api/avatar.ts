@@ -1,19 +1,220 @@
-import { getClient } from './client';
-import type { SpeechResponse } from '../types';
+/**
+ * ==================================================
+ * ██╗     ██╗██╗   ██╗ █████╗
+ * ██║     ██║╚██╗ ██╔╝██╔══██╗
+ * ██║     ██║ ╚████╔╝ ███████║
+ * ██║     ██║  ╚██╔╝  ██╔══██║
+ * ███████╗██║   ██║   ██║  ██║
+ * ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝
+ *        AI Assistant
+ * ==================================================
+ * Author / Creator : Mahmut Denizli (With help of LiyaAi)
+ * License          : MIT
+ * Connect          : liyalabs.com, info@liyalabs.com
+ * ==================================================
+ */
+// Liya 3D Avatar Widget - Avatar API (React Version)
+import { getClient, getConfig } from "./client";
+import type { ApiResponse } from "../types";
+import { logger } from "../utils/logger";
 
-export async function generateSpeech(text: string, assistantId?: string): Promise<SpeechResponse> {
-  const { data } = await getClient().post('/api/v1/external/avatar/speech/', {
-    text,
-    assistant_id: assistantId,
-  });
-  return {
-    audioUrl: data.audio_url,
-    visemes: data.visemes ?? [],
-    duration: data.duration ?? 0,
-  };
+export interface VisemeData {
+  time: number;
+  viseme: number;
+  duration: number;
 }
 
-export async function fetchAvatarModel(assistantId: string): Promise<string> {
-  const { data } = await getClient().get(`/api/v1/external/avatar/model/${assistantId}`);
-  return data.model_url;
+export interface AvatarSpeechResponse {
+  visemes: VisemeData[];
+  duration: number;
+  text: string;
+  audio_base64?: string;
+  audio_format?: string;
+  audio_mime?: string;
+}
+
+export interface TextToSpeechOptions {
+  voice?: string;
+  speed?: number;
+}
+
+/**
+ * Generate avatar speech with viseme timing data for lip-sync
+ */
+export async function generateAvatarSpeech(
+  text: string,
+  options: TextToSpeechOptions = {},
+): Promise<AvatarSpeechResponse> {
+  const client = getClient();
+  logger.log("[AvatarAPI] 🗣️ generateAvatarSpeech", {
+    textLength: text.length,
+    voice: options.voice,
+  });
+
+  const payload = {
+    text,
+    voice: options.voice || "nova",
+    speed: options.speed || 1.0,
+    include_audio: true,
+  };
+
+  const response = await client.post<ApiResponse<AvatarSpeechResponse>>(
+    "/api/v1/external/avatar/speech/",
+    payload,
+  );
+
+  if (response.data.status === "error") {
+    throw new Error(
+      response.data.message || "Failed to generate avatar speech",
+    );
+  }
+
+  return response.data.data!;
+}
+
+/**
+ * Generate text-to-speech audio only (no visemes)
+ */
+export async function textToSpeech(
+  text: string,
+  options: TextToSpeechOptions = {},
+): Promise<Blob> {
+  const client = getClient();
+  logger.log("[AvatarAPI] 🔊 textToSpeech", {
+    textLength: text.length,
+    voice: options.voice,
+  });
+
+  try {
+    const response = await client.post(
+      "/api/v1/external/tts/",
+      {
+        text,
+        voice: options.voice || "nova",
+        speed: options.speed || 1.0,
+      },
+      {
+        responseType: "blob",
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    logger.error("[AvatarAPI] ❌ textToSpeech error", error);
+    throw new Error("Failed to generate speech audio");
+  }
+}
+
+/**
+ * Decode base64 audio to AudioBuffer
+ */
+export async function decodeAudioBase64(
+  base64Audio: string,
+  audioContext: AudioContext,
+): Promise<AudioBuffer> {
+  const binaryString = atob(base64Audio);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return audioContext.decodeAudioData(bytes.buffer);
+}
+
+export interface AvatarModelResponse {
+  model_url: string;
+  model_type: string;
+  source: "default" | "assistant";
+}
+
+/**
+ * Custom error class to preserve error code from API
+ */
+export class AvatarApiError extends Error {
+  code: string;
+  constructor(message: string, code: string) {
+    super(message);
+    this.code = code;
+    this.name = "AvatarApiError";
+  }
+}
+
+export interface UserAccessResponse {
+  has_avatar_access: boolean;
+  account_type:
+    | "standard"
+    | "premium"
+    | "premium_plus"
+    | "enterprise"
+    | "system_admin";
+  can_use_custom_avatar: boolean;
+}
+
+/**
+ * Check if user has access to 3D Avatar features
+ * This should be called before loading avatar model
+ */
+export async function checkUserAccess(): Promise<UserAccessResponse> {
+  const client = getClient();
+
+  try {
+    const response = await client.get<ApiResponse<UserAccessResponse>>(
+      "/api/v1/external/user/access/",
+    );
+
+    if (response.data.status === "error") {
+      throw new AvatarApiError(
+        response.data.message || "Failed to check user access",
+        "UNKNOWN_ERROR",
+      );
+    }
+
+    return response.data.data!;
+  } catch (error: any) {
+    if (error.response?.data) {
+      const data = error.response.data;
+      throw new AvatarApiError(
+        data.message || "Failed to check user access",
+        data.code || "UNKNOWN_ERROR",
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get avatar model URL from backend
+ * Returns default avatar or assistant-specific avatar if available
+ */
+export async function getAvatarModel(
+  assistantId?: string,
+): Promise<AvatarModelResponse> {
+  const client = getClient();
+
+  const params = assistantId ? { assistant_id: assistantId } : {};
+
+  try {
+    const response = await client.get<ApiResponse<AvatarModelResponse>>(
+      "/api/v1/external/avatar/model/",
+      { params },
+    );
+
+    if (response.data.status === "error") {
+      const code = (response.data as any).code || "UNKNOWN_ERROR";
+      throw new AvatarApiError(
+        response.data.message || "Failed to get avatar model",
+        code,
+      );
+    }
+
+    return response.data.data!;
+  } catch (error: any) {
+    if (error.response?.data) {
+      const data = error.response.data;
+      throw new AvatarApiError(
+        data.message || "Failed to get avatar model",
+        data.code || "UNKNOWN_ERROR",
+      );
+    }
+    throw error;
+  }
 }

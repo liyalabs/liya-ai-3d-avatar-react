@@ -1,3 +1,6 @@
+/**
+ * Liya 3D Avatar Demo (Basic)
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { LiyaAvatarWidget } from '@liyalabs/3d-avatar';
@@ -10,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <p style={{ color: '#94a3b8' }}>The avatar widget appears in the bottom-right corner.</p>
     </div>
     <LiyaAvatarWidget
-      apiKey={import.meta.env.VITE_LIYA_API_KEY ?? 'YOUR_API_KEY'}
+      apiKey={import.meta.env.VITE_LIYA_API_KEY || 'YOUR_API_KEY'}
       baseUrl={import.meta.env.VITE_LIYA_BASE_URL}
       assistantId={import.meta.env.VITE_ASSISTANT_ID}
       welcomeMessage="Merhaba! Size nasıl yardımcı olabilirim?"
@@ -22,7 +25,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       theme={{ primaryColor: '#6366f1' }}
       onMessageSent={(msg) => console.log('sent:', msg)}
       onMessageReceived={(msg) => console.log('received:', msg)}
-      onAvatarOpened={() => console.log('avatar opened')}
     />
   </React.StrictMode>,
 );

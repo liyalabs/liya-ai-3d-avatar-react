@@ -1,3 +1,41 @@
+/**
+ * ==================================================
+ * ██╗     ██╗██╗   ██╗ █████╗
+ * ██║     ██║╚██╗ ██╔╝██╔══██╗
+ * ██║     ██║ ╚████╔╝ ███████║
+ * ██║     ██║  ╚██╔╝  ██╔══██║
+ * ███████╗██║   ██║   ██║  ██║
+ * ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝
+ *        AI Assistant
+ * ==================================================
+ * Author / Creator : Mahmut Denizli (With help of LiyaAi)
+ * License          : MIT
+ * Connect          : liyalabs.com, info@liyalabs.com
+ * ==================================================
+ */
+// Liya AI Chat - TypeScript Type Definitions (React Version)
+
+// ============================================================================
+// Configuration Types
+// ============================================================================
+
+export type ChatMode = "widget" | "app";
+
+export type LiyaWidgetMode = "standard" | "modal_kiosk" | "kiosk";
+
+export interface LiyaChatConfig {
+  mode: ChatMode;
+  apiKey: string;
+  baseUrl: string;
+  apiUrl?: string;
+  assistantId: string;
+  assistantName?: string;
+  avatarModelUrl?: string;
+  theme?: ThemeConfig;
+  features?: FeaturesConfig;
+  locale?: string;
+}
+
 export interface ThemeConfig {
   primaryColor?: string;
   secondaryColor?: string;
@@ -5,51 +43,171 @@ export interface ThemeConfig {
   textColor?: string;
   fontFamily?: string;
   borderRadius?: string;
-  position?: WidgetPosition;
-  widgetSize?: 'small' | 'medium' | 'large';
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+  widgetSize?: "small" | "medium" | "large";
   zIndex?: number;
 }
 
-export type WidgetPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-export type WidgetMode = 'standard' | 'modal_kiosk' | 'kiosk';
+export interface FeaturesConfig {
+  voice?: boolean;
+  voiceEnabled?: boolean;
+  fileUpload?: boolean;
+  sessionHistory?: boolean;
+  markdown?: boolean;
+  codeHighlight?: boolean;
+  typingIndicator?: boolean;
+  soundEffects?: boolean;
+}
 
-export interface LiyaChatConfig {
-  apiKey: string;
-  baseUrl?: string;
-  assistantId?: string;
+// ============================================================================
+// API Response Types
+// ============================================================================
+
+export interface ApiResponse<T = unknown> {
+  status: "success" | "error";
+  data?: T;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+// ============================================================================
+// Assistant Types
+// ============================================================================
+
+export interface Assistant {
+  id: string;
+  name: string;
+  description: string;
+  model: string;
+  total_messages: number;
+}
+
+// ============================================================================
+// Session Types
+// ============================================================================
+
+export interface Session {
+  id: string;
+  assistant_id?: string;
+  session_name: string;
+  message_count: number;
+  created_at: string;
+  last_message_at: string | null;
+}
+
+export interface SessionListResponse {
+  sessions: Session[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CreateSessionRequest {
+  assistant_id: string;
+  session_name?: string;
+  external_session_id?: string;
+}
+
+// ============================================================================
+// Message Types
+// ============================================================================
+
+export type MessageRole = "user" | "assistant";
+
+export interface MessageMediaItem {
+  type: "image" | "video";
+  url: string;
+  alt?: string;
+  source?: string;
 }
 
 export interface Message {
   id: string;
-  role: 'user' | 'assistant';
   content: string;
-  createdAt: string;
-  isTemp?: boolean;
+  role: MessageRole;
+  created_at: string;
+  response_time?: number;
+  attachments?: readonly FileAttachment[];
+  raw_response?: string;
+  media?: readonly MessageMediaItem[];
 }
 
-export interface Session {
-  id: string;
+export interface ParsedResponse {
+  response: string;
+  suggestions?: string[];
+  source?: string;
+  metadata?: {
+    confidence?: number;
+    category?: string;
+    requires_followup?: boolean;
+  };
+}
+
+export interface SendMessageRequest {
+  assistant_id: string;
+  message: string;
+  session_id?: string;
+  external_session_id?: string;
+  file_ids?: string[];
+}
+
+export interface UrlCitationAnnotation {
+  type: "url_citation";
+  url: string;
   title: string;
-  createdAt: string;
-  updatedAt: string;
+  start_index: number;
+  end_index: number;
 }
 
-export interface UploadedFile {
+export interface FileCitationAnnotation {
+  type: "file_citation";
+  file_id: string;
+  index: number;
+}
+
+export type Annotation = UrlCitationAnnotation | FileCitationAnnotation;
+
+export interface SendMessageResponse {
+  session_id: string;
+  message_id?: string;
+  response?: string;
+  response_time?: number;
+  user_message?: Message;
+  assistant_message?: Message;
+  suggestions?: string[];
+  metadata?: Record<string, any>;
+  presentation_result?: Record<string, any>;
+  annotations?: Annotation[];
+  media?: MessageMediaItem[];
+}
+
+export interface SessionHistoryResponse {
+  session_id: string;
+  messages: Message[];
+  total: number;
+}
+
+// ============================================================================
+// File Types
+// ============================================================================
+
+export interface FileAttachment {
   id: string;
-  name: string;
-  size: number;
-  type: string;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  openai_file_id?: string;
+  created_at: string;
 }
 
-export interface PendingFile {
+export interface UploadFileRequest {
+  session_id: string;
   file: File;
 }
 
-export interface ChatResponse {
-  sessionId: string;
-  message: string;
-  annotations?: unknown[];
-}
+// ============================================================================
+// Avatar & Voice Types
+// ============================================================================
 
 export interface Viseme {
   time: number;
@@ -60,45 +218,4 @@ export interface Viseme {
 export interface SpeechResponse {
   audioUrl: string;
   visemes: Viseme[];
-  duration: number;
-}
-
-export interface AvatarColors {
-  top?: string;
-  bottom?: string;
-  footwear?: string;
-}
-
-export interface LiyaAvatarWidgetProps {
-  apiKey: string;
-  baseUrl?: string;
-  assistantId?: string;
-  position?: WidgetPosition;
-  theme?: ThemeConfig;
-  assistantName?: string;
-  welcomeMessage?: string;
-  welcomeSuggestions?: string[];
-  placeholder?: string;
-  showBranding?: boolean;
-  showVoice?: boolean;
-  voiceEnabled?: boolean;
-  showFileUpload?: boolean;
-  showAvatarButton?: boolean;
-  avatarModelUrl?: string;
-  offsetX?: number;
-  offsetY?: number;
-  customIcon?: string;
-  autoSpeak?: boolean;
-  animateButton?: boolean;
-  viewOnPageStart?: boolean;
-  liyaWidgetMode?: WidgetMode;
-  closeButtonEnabled?: boolean;
-  locale?: 'tr' | 'en';
-  onOpened?: () => void;
-  onClosed?: () => void;
-  onMessageSent?: (message: string) => void;
-  onMessageReceived?: (message: string) => void;
-  onSearchResults?: (data: { annotations: unknown[]; response: string; sessionId: string }) => void;
-  onAvatarOpened?: () => void;
-  onAvatarClosed?: () => void;
 }
