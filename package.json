@@ -1,6 +1,6 @@
 {
   "name": "@liyalabs/liya-3d-avatar-widget-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Liya AI 3D Talking Avatar Widget for React - AI Assistant with real-time lip-sync",
   "type": "module",
   "main": "./dist/index.cjs",

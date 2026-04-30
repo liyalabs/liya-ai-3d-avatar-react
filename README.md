@@ -2,7 +2,7 @@
 
 Liya AI 3D Talking Avatar Widget for React — AI Assistant with real-time lip-sync animation.
 
-[![npm version](https://img.shields.io/npm/v/@liyalabs/3d-avatar.svg)](https://www.npmjs.com/package/@liyalabs/3d-avatar)
+[![npm version](https://img.shields.io/npm/v/@liyalabs/liya-3d-avatar-widget-react.svg)](https://www.npmjs.com/package/@liyalabs/liya-3d-avatar-widget-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **[Live Demo →](https://ai.liyalabs.com)** &nbsp;|&nbsp; **[Website →](https://liyalabs.com)** &nbsp;|&nbsp; **[API Docs →](https://ai.liyalabs.com/developer)**
@@ -43,11 +43,11 @@ Liya AI 3D Talking Avatar Widget for React — AI Assistant with real-time lip-s
 ## Installation
 
 ```bash
-npm install @liyalabs/3d-avatar
+npm install @liyalabs/liya-3d-avatar-widget-react
 # or
-yarn add @liyalabs/3d-avatar
+yarn add @liyalabs/liya-3d-avatar-widget-react
 # or
-pnpm add @liyalabs/3d-avatar
+pnpm add @liyalabs/liya-3d-avatar-widget-react
 ```
 
 **Peer dependencies** (install separately):
@@ -63,7 +63,7 @@ npm install react react-dom
 Set up the API client with your credentials before rendering any widget:
 
 ```tsx
-import { initializeClient } from "@liyalabs/3d-avatar";
+import { initializeClient } from "@liyalabs/liya-3d-avatar-widget-react";
 
 initializeClient({
   baseUrl: "https://app-X-ai.liyalabs.com", // Your assigned backend URL (see GAR section)
