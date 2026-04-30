@@ -13,7 +13,13 @@
  * Connect          : liyalabs.com, info@liyalabs.com
  * ==================================================
  */
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import type { ThemeConfig, LiyaWidgetMode } from "../../types";
 import { useChat } from "../../hooks/useChat";
 import { useVoice } from "../../hooks/useVoice";
@@ -187,35 +193,6 @@ function LiyaAvatarWidget({
   const preparingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const avatarSceneRef = useRef<any>(null);
 
-  // Initialize
-  useEffect(() => {
-    logger.log("[LiyaAvatarWidget] 🏁 Mount useEffect — starting init", {
-      config: {
-        baseUrl: config.baseUrl,
-        assistantId: config.assistantId,
-        avatarModelUrl: config.avatarModelUrl,
-        locale: config.locale,
-      },
-      propLocale,
-      currentSessionId,
-    });
-    initLocale(propLocale || config.locale || "tr");
-    initFromStorage();
-    if (currentSessionId) loadHistory(currentSessionId);
-    fetchModel();
-  }, [
-    config.baseUrl,
-    config.assistantId,
-    config.avatarModelUrl,
-    config.locale,
-    propLocale,
-    currentSessionId,
-    initLocale,
-    initFromStorage,
-    loadHistory,
-    fetchModel,
-  ]);
-
   // Fetch avatar model from backend
   const fetchModel = useCallback(async () => {
     logger.log("[LiyaAvatarWidget] 🔍 fetchModel called", {
@@ -247,6 +224,35 @@ function LiyaAvatarWidget({
       });
     }
   }, [avatarModelUrl, config.avatarModelUrl, config.assistantId]);
+
+  // Initialize
+  useEffect(() => {
+    logger.log("[LiyaAvatarWidget] 🏁 Mount useEffect — starting init", {
+      config: {
+        baseUrl: config.baseUrl,
+        assistantId: config.assistantId,
+        avatarModelUrl: config.avatarModelUrl,
+        locale: config.locale,
+      },
+      propLocale,
+      currentSessionId,
+    });
+    initLocale(propLocale || config.locale || "tr");
+    initFromStorage();
+    if (currentSessionId) loadHistory(currentSessionId);
+    fetchModel();
+  }, [
+    config.baseUrl,
+    config.assistantId,
+    config.avatarModelUrl,
+    config.locale,
+    propLocale,
+    currentSessionId,
+    initLocale,
+    initFromStorage,
+    loadHistory,
+    fetchModel,
+  ]);
 
   const resolvedAvatarUrl =
     avatarModelUrl || config.avatarModelUrl || backendAvatarUrl;
@@ -293,9 +299,10 @@ function LiyaAvatarWidget({
           audioSourceRef.current.stop();
           audioSourceRef.current.disconnect();
         }
-        audioSourceRef.current = ctx.createBufferSource();
-        audioSourceRef.current.buffer = audioBuffer;
-        audioSourceRef.current.connect(ctx.destination);
+        const source = ctx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(ctx.destination);
+        audioSourceRef.current = source;
         setIsSpeaking(true);
         startTimeRef.current = ctx.currentTime;
         const update = () => {
@@ -305,12 +312,12 @@ function LiyaAvatarWidget({
           }
         };
         update();
-        audioSourceRef.current.onended = () => {
+        source.onended = () => {
           setIsSpeaking(false);
           setAudioCurrentTime(0);
           setCurrentVisemes([]);
         };
-        audioSourceRef.current.start();
+        source.start();
       } catch (e) {
         setIsSpeaking(false);
       }
