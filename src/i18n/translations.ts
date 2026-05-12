@@ -78,6 +78,9 @@ export interface Translations {
     speaking: string;
     hideMessages: string;
     showMessages: string;
+    micDenied: string;
+    micPermissionNeeded: string;
+    allowMic: string;
   };
   // Rotating preparing messages (long processing)
   preparingMessages: string[];
@@ -183,6 +186,9 @@ export const translations: Record<SupportedLocale, Translations> = {
       speaking: "Konuşuyor...",
       hideMessages: "Mesajları gizle",
       showMessages: "Mesajları göster",
+      micDenied: "Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.",
+      micPermissionNeeded: "Mikrofon izni gerekli",
+      allowMic: "Mikrofona İzin Ver",
     },
     preparingMessages: [
       "Hazırlanıyor...",
@@ -294,6 +300,9 @@ export const translations: Record<SupportedLocale, Translations> = {
       speaking: "Speaking...",
       hideMessages: "Hide messages",
       showMessages: "Show messages",
+      micDenied: "Microphone access denied. Please allow in browser settings.",
+      micPermissionNeeded: "Microphone permission needed",
+      allowMic: "Allow Microphone",
     },
     preparingMessages: [
       "Preparing...",
@@ -404,6 +413,9 @@ export const translations: Record<SupportedLocale, Translations> = {
       speaking: "正在说话...",
       hideMessages: "隐藏消息",
       showMessages: "显示消息",
+      micDenied: "麦克风访问被拒绝。请在浏览器设置中允许。",
+      micPermissionNeeded: "需要麦克风权限",
+      allowMic: "允许麦克风",
     },
     preparingMessages: [
       "准备中...",

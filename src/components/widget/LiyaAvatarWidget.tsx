@@ -157,6 +157,8 @@ function LiyaAvatarWidget({
     transcript,
     startRecording,
     stopRecording,
+    micPermission,
+    requestMicPermission,
   } = useVoice();
   const {
     colors: avatarColors,
@@ -550,8 +552,28 @@ function LiyaAvatarWidget({
   // Kiosk layout
   if (isKiosk) {
     return (
-      <div className="liya-ai-3d-avatar-react-kiosk" style={cssVars}>
+      <div
+        className={`liya-ai-3d-avatar-react-kiosk${liyaWidgetMode === "modal_kiosk" ? " liya-ai-3d-avatar-react-kiosk--modal" : ""}`}
+        style={cssVars}
+      >
         <div className="liya-ai-3d-avatar-react-kiosk__container">
+          {/* Kapat butonu — sağ üst köşe */}
+          {closeButtonEnabled && (
+            <button
+              className="liya-ai-3d-avatar-react-kiosk__close"
+              onClick={() => setIsOpen(false)}
+              aria-label={t.kiosk?.close || "Close"}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="20"
+                height="20"
+              >
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          )}
           <div className="liya-ai-3d-avatar-react-kiosk__scene-bg">
             <AvatarScene
               ref={avatarSceneRef}
@@ -626,6 +648,35 @@ function LiyaAvatarWidget({
                 <span>{locale === "tr" ? "EN" : "TR"}</span>
               </button>
             </div>
+
+            {/* Mic Permission Banner — sadece kiosk modunda, izin yokken */}
+            {(micPermission === "denied" || micPermission === "prompt") && (
+              <div className="liya-ai-3d-avatar-react-kiosk__mic-permission">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  width="24"
+                  height="24"
+                >
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+                <p className="liya-ai-3d-avatar-react-kiosk__mic-permission-text">
+                  {micPermission === "denied"
+                    ? t.kiosk?.micDenied ||
+                      "Microphone access denied. Please allow in browser settings."
+                    : t.kiosk?.micPermissionNeeded ||
+                      "Microphone permission needed"}
+                </p>
+                {micPermission === "prompt" && (
+                  <button
+                    className="liya-ai-3d-avatar-react-kiosk__mic-permission-btn"
+                    onClick={requestMicPermission}
+                  >
+                    {t.kiosk?.allowMic || "Allow Microphone"}
+                  </button>
+                )}
+              </div>
+            )}
 
             <button
               className="liya-ai-3d-avatar-react-kiosk__mic"
