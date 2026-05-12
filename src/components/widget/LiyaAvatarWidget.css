@@ -45,8 +45,13 @@
 }
 
 @keyframes liya-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Chat Panel */
@@ -75,12 +80,14 @@
   }
 }
 
-.liya-ai-3d-avatar-react-widget--bottom-right .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--bottom-right
+  .liya-ai-3d-avatar-react-widget__panel {
   bottom: 70px;
   right: 0;
 }
 
-.liya-ai-3d-avatar-react-widget--bottom-left .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--bottom-left
+  .liya-ai-3d-avatar-react-widget__panel {
   bottom: 70px;
   left: 0;
 }
@@ -175,8 +182,13 @@
 }
 
 @keyframes liya-pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Header Buttons */
@@ -387,14 +399,45 @@
 /* ===== KIOSK MODE ===== */
 .liya-ai-3d-avatar-react-kiosk {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #0f172a;
-  z-index: 10001;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(
+    ellipse at 50% 120%,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(8, 12, 24, 0.97) 60%
+  );
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* modal_kiosk: yarı-saydam overlay */
+.liya-ai-3d-avatar-react-kiosk--modal::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(8, 12, 24, 0.55) 0%,
+    rgba(8, 12, 24, 0.75) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* modal_kiosk: daha dar container */
+.liya-ai-3d-avatar-react-kiosk--modal
+  .liya-ai-3d-avatar-react-kiosk__container {
+  width: min(50vw, 860px);
+  height: 100%;
+}
+
+/* modal_kiosk: arka plan daha saydam */
+.liya-ai-3d-avatar-react-kiosk--modal {
+  background: transparent;
 }
 
 .liya-ai-3d-avatar-react-kiosk__container {
@@ -423,7 +466,11 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(15, 23, 42, 0.95) 0%,
+    transparent 100%
+  );
 }
 
 .liya-ai-3d-avatar-react-kiosk__messages {
@@ -604,4 +651,129 @@
 
 .liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== KIOSK RESPONSIVE ===== */
+/* Büyük ekran (≥1200px) — container'ı ortala, genişlik sınırla */
+@media (min-width: 1200px) {
+  .liya-ai-3d-avatar-react-kiosk__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .liya-ai-3d-avatar-react-kiosk__messages {
+    max-width: 720px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__controls {
+    padding: 48px 64px;
+  }
+}
+
+/* Çok büyük ekran (≥1920px) — daha da geniş */
+@media (min-width: 1920px) {
+  .liya-ai-3d-avatar-react-kiosk__container {
+    max-width: 1400px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__messages {
+    max-width: 860px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__controls {
+    padding: 56px 80px;
+  }
+}
+
+/* Mobil (<768px) — padding daralt, mic küçült */
+@media (max-width: 767px) {
+  .liya-ai-3d-avatar-react-kiosk__controls {
+    padding: 24px 16px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__mic {
+    width: 64px;
+    height: 64px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__messages {
+    max-height: 140px;
+    padding: 12px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__close {
+    top: 16px;
+    right: 16px;
+  }
+}
+
+/* Mic Permission Banner */
+.liya-ai-3d-avatar-react-kiosk__mic-permission {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 380px;
+  text-align: center;
+  animation: liya-kiosk-fade-in 0.3s ease;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+@keyframes liya-kiosk-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Kiosk close button */
+.liya-ai-3d-avatar-react-kiosk__close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.liya-ai-3d-avatar-react-kiosk__close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
