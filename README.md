@@ -75,8 +75,8 @@ initializeClient({
 ### 2. Use the Widget Component
 
 ```tsx
-import { LiyaAvatarWidget } from "@liyalabs/3d-avatar";
-import "@liyalabs/3d-avatar/style.css";
+import { LiyaAvatarWidget } from "@liyalabs/liya-3d-avatar-widget-react";
+import "@liyalabs/liya-3d-avatar-widget-react/style.css";
 
 function App() {
   return (
@@ -135,7 +135,7 @@ Main widget component with chat panel and avatar button.
 Standalone full-screen avatar modal with integrated chat.
 
 ```tsx
-import { AvatarModal } from "@liyalabs/3d-avatar";
+import { AvatarModal } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyApp() {
   const [isOpen, setIsOpen] = useState(false);
@@ -156,8 +156,8 @@ function MyApp() {
 Low-level 3D avatar renderer (Three.js). Use this for custom integrations.
 
 ```tsx
-import { AvatarScene } from "@liyalabs/3d-avatar";
-import type { AvatarSceneHandle } from "@liyalabs/3d-avatar";
+import { AvatarScene } from "@liyalabs/liya-3d-avatar-widget-react";
+import type { AvatarSceneHandle } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyApp() {
   const sceneRef = useRef<AvatarSceneHandle>(null);
@@ -199,7 +199,7 @@ function MyApp() {
 Manage chat sessions and messages.
 
 ```tsx
-import { useChat } from "@liyalabs/3d-avatar";
+import { useChat } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyComponent() {
   const { messages, sendMessage, isLoading, currentSessionId, createSession } =
@@ -221,7 +221,7 @@ function MyComponent() {
 Speech-to-text voice input.
 
 ```tsx
-import { useVoice } from "@liyalabs/3d-avatar";
+import { useVoice } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyComponent() {
   const { isRecording, transcript, startRecording, stopRecording } = useVoice();
@@ -239,7 +239,7 @@ function MyComponent() {
 Manage chat sessions.
 
 ```tsx
-import { useSessions } from "@liyalabs/3d-avatar";
+import { useSessions } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyComponent() {
   const { sessions, loadSessions, deleteSession } = useSessions();
@@ -266,7 +266,7 @@ function MyComponent() {
 Internationalization hook.
 
 ```tsx
-import { useI18n } from "@liyalabs/3d-avatar";
+import { useI18n } from "@liyalabs/liya-3d-avatar-widget-react";
 
 function MyComponent() {
   const { t, locale, setLocale } = useI18n();
@@ -299,7 +299,7 @@ import {
   getAssistants,
   checkAccess,
   getTaskStatus,
-} from "@liyalabs/3d-avatar";
+} from "@liyalabs/liya-3d-avatar-widget-react";
 
 // Initialize the API client (call once at app startup)
 initializeClient({ baseUrl: "...", apiKey: "...", assistantId: "..." });
