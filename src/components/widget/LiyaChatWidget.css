@@ -1,16 +1,164 @@
+/* ===== LiyaChatWidget CSS ===== */
+/* Toggle Button */
+.liya-ai-3d-avatar-react-widget__toggle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.9) 0%,
+    rgba(139, 92, 246, 0.9) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--liya-primary-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 24px rgba(99, 102, 241, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.3) 0%,
+    rgba(139, 92, 246, 0.3) 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 8px 32px rgba(99, 102, 241, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.liya-ai-3d-avatar-react-widget__toggle:hover::before {
+  opacity: 1;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle--open {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 100, 120, 0.9) 0%,
+    rgba(80, 80, 100, 0.9) 100%
+  );
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  top: -2px;
+  right: -2px;
+  opacity: 0;
+  animation: none;
+}
+
+/* Animated button state */
+.liya-ai-3d-avatar-react-widget__toggle--animated {
+  animation: toggle-bounce 2s ease-in-out infinite;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle--animated
+  .liya-ai-3d-avatar-react-widget__toggle-sparkle {
+  opacity: 1;
+  animation: sparkle-pulse 1.5s ease-in-out infinite;
+}
+
+.liya-ai-3d-avatar-react-widget__toggle--animated::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  animation: ring-pulse 2s ease-out infinite;
+}
+
+@keyframes toggle-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  15% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  30% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-4px) scale(1.02);
+  }
+  60% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Widget Container */
 .liya-ai-3d-avatar-react-widget {
   position: fixed;
   z-index: var(--liya-z-index, 9999);
-  font-family: var(--liya-font-family, system-ui, -apple-system, sans-serif);
+  font-family: var(--liya-font-family);
 }
 
 .liya-ai-3d-avatar-react-widget--bottom-right {
-  bottom: var(--liya-offset-y, 20px);
+  bottom: calc(var(--liya-offset-y, 20px) + env(safe-area-inset-bottom, 0px));
   right: var(--liya-offset-x, 20px);
 }
 
 .liya-ai-3d-avatar-react-widget--bottom-left {
-  bottom: var(--liya-offset-y, 20px);
+  bottom: calc(var(--liya-offset-y, 20px) + env(safe-area-inset-bottom, 0px));
   left: var(--liya-offset-x, 20px);
 }
 
@@ -24,115 +172,529 @@
   left: var(--liya-offset-x, 20px);
 }
 
-.liya-ai-3d-avatar-react-widget__toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: none;
-  background: var(--liya-primary-color);
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-}
-
-.liya-ai-3d-avatar-react-widget__toggle:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.liya-ai-3d-avatar-react-widget__toggle--open {
-  background: #9ca3af; /* text-muted fallback */
-}
-
+/* Chat Panel */
 .liya-ai-3d-avatar-react-widget__panel {
   position: absolute;
   width: 380px;
-  height: 550px;
+  height: 600px;
   max-height: calc(100vh - 100px);
-  background: var(--liya-bg-color);
+  max-height: calc(100dvh - 100px);
+  background: transparent;
   border-radius: var(--liya-border-radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(20px) scale(0.95);
-  transition: all 0.3s ease;
+  animation: panel-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.liya-ai-3d-avatar-react-widget__panel--open {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) scale(1);
+@keyframes panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.liya-ai-3d-avatar-react-widget--bottom-right .liya-ai-3d-avatar-react-widget__panel,
-.liya-ai-3d-avatar-react-widget--bottom-left .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--bottom-right
+  .liya-ai-3d-avatar-react-widget__panel,
+.liya-ai-3d-avatar-react-widget--bottom-left
+  .liya-ai-3d-avatar-react-widget__panel {
   bottom: 70px;
 }
 
-.liya-ai-3d-avatar-react-widget--top-right .liya-ai-3d-avatar-react-widget__panel,
-.liya-ai-3d-avatar-react-widget--top-left .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--top-right
+  .liya-ai-3d-avatar-react-widget__panel,
+.liya-ai-3d-avatar-react-widget--top-left
+  .liya-ai-3d-avatar-react-widget__panel {
   top: 70px;
 }
 
-.liya-ai-3d-avatar-react-widget--bottom-right .liya-ai-3d-avatar-react-widget__panel,
-.liya-ai-3d-avatar-react-widget--top-right .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--bottom-right
+  .liya-ai-3d-avatar-react-widget__panel,
+.liya-ai-3d-avatar-react-widget--top-right
+  .liya-ai-3d-avatar-react-widget__panel {
   right: 0;
 }
 
-.liya-ai-3d-avatar-react-widget--bottom-left .liya-ai-3d-avatar-react-widget__panel,
-.liya-ai-3d-avatar-react-widget--top-left .liya-ai-3d-avatar-react-widget__panel {
+.liya-ai-3d-avatar-react-widget--bottom-left
+  .liya-ai-3d-avatar-react-widget__panel,
+.liya-ai-3d-avatar-react-widget--top-left
+  .liya-ai-3d-avatar-react-widget__panel {
   left: 0;
 }
 
+/* Upper Section - Avatar Area */
+.liya-ai-3d-avatar-react-widget__upper {
+  position: relative;
+  height: 240px;
+  min-height: 240px;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 100%
+  );
+  border-radius: var(--liya-border-radius) var(--liya-border-radius) 0 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__avatar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Liquid Glass Header */
 .liya-ai-3d-avatar-react-widget__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background: var(--liya-primary-color);
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
+  z-index: 10;
 }
 
 .liya-ai-3d-avatar-react-widget__header-info {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
-.liya-ai-3d-avatar-react-widget__avatar {
-  width: 40px;
-  height: 40px;
+.liya-ai-3d-avatar-react-widget__header-avatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
 }
 
 .liya-ai-3d-avatar-react-widget__header-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .liya-ai-3d-avatar-react-widget__title {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .liya-ai-3d-avatar-react-widget__status {
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
+.liya-ai-3d-avatar-react-widget__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: status-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.liya-ai-3d-avatar-react-widget__status-dot--loading {
+  background: #f59e0b;
+  animation: status-loading 0.6s ease-in-out infinite;
+}
+
+@keyframes status-loading {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
+}
+
+.liya-ai-3d-avatar-react-widget__status-dot--speaking {
+  background: #ef4444;
+  animation: status-pulse 0.8s ease-in-out infinite;
+}
+
+/* Header Buttons */
+.liya-ai-3d-avatar-react-widget__replay-btn,
+.liya-ai-3d-avatar-react-widget__settings-btn,
+.liya-ai-3d-avatar-react-widget__lang-btn,
 .liya-ai-3d-avatar-react-widget__close {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn:hover,
+.liya-ai-3d-avatar-react-widget__settings-btn:hover,
+.liya-ai-3d-avatar-react-widget__lang-btn:hover,
+.liya-ai-3d-avatar-react-widget__close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn--cancel {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.liya-ai-3d-avatar-react-widget__replay-btn--cancel:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-btn--active {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.liya-ai-3d-avatar-react-widget__lang-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  min-width: 32px;
+}
+
+.liya-ai-3d-avatar-react-widget__lang-text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Settings Panel */
+.liya-ai-3d-avatar-react-widget__settings-panel {
+  position: absolute;
+  top: 52px;
+  right: 8px;
+  width: 220px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  animation: settings-slide-down 0.2s ease;
+}
+
+@keyframes settings-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-section {
+  margin-bottom: 12px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-preset--active {
+  border-color: white;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-color-row input {
+  width: 32px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-reset {
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  background: rgba(99, 102, 241, 0.3);
+  color: white;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liya-ai-3d-avatar-react-widget__settings-panel-reset:hover {
+  background: rgba(99, 102, 241, 0.4);
+  border-color: rgba(99, 102, 241, 0.7);
+}
+
+/* Lower Section - Chat Area */
+.liya-ai-3d-avatar-react-widget__lower {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--liya-bg-color);
+  border-radius: 0 0 var(--liya-border-radius) var(--liya-border-radius);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Branding */
+.liya-ai-3d-avatar-react-widget__branding {
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--liya-text-muted, #9ca3af);
+  border-top: 1px solid var(--liya-border-color, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__branding a {
+  color: var(--liya-primary-color, #6366f1);
+  text-decoration: none;
+}
+
+.liya-ai-3d-avatar-react-widget__branding a:hover {
+  text-decoration: underline;
+}
+
+/* ── NO-AVATAR MODE ── */
+.liya-ai-3d-avatar-react-widget__panel--no-avatar {
+  height: 520px;
+}
+
+.liya-ai-3d-avatar-react-widget__no-avatar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--liya-primary-color, #6366f1);
+  color: white;
+  border-radius: var(--liya-border-radius) var(--liya-border-radius) 0 0;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__no-avatar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__no-avatar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__no-avatar-text h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liya-ai-3d-avatar-react-widget__no-avatar-text
+  .liya-ai-3d-avatar-react-widget__status {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: var(--liya-primary-color, #6366f1);
+  color: white;
+  border-radius: var(--liya-border-radius) var(--liya-border-radius) 0 0;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-status {
+  font-size: 11px;
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.liya-ai-3d-avatar-react-widget__simple-header-close {
   background: transparent;
   border: none;
   color: white;
@@ -143,45 +705,32 @@
   justify-content: center;
   opacity: 0.8;
   transition: opacity 0.2s;
+  flex-shrink: 0;
 }
 
-.liya-ai-3d-avatar-react-widget__close:hover {
+.liya-ai-3d-avatar-react-widget__simple-header-close:hover {
   opacity: 1;
 }
 
-.liya-ai-3d-avatar-react-widget__branding {
-  padding: 8px;
-  text-align: center;
-  font-size: 11px;
-  color: #9ca3af; /* text-muted fallback */
-  border-top: 1px solid #e5e7eb; /* border-color fallback */
-}
-
-.liya-ai-3d-avatar-react-widget__branding a {
-  color: var(--liya-primary-color);
-  text-decoration: none;
-}
-
-.liya-ai-3d-avatar-react-widget__branding a:hover {
-  text-decoration: underline;
-}
-
+/* Mobile responsive */
 @media (max-width: 480px) {
   .liya-ai-3d-avatar-react-widget__panel {
     width: calc(100vw - 40px);
     height: calc(100vh - 100px);
     max-height: none;
   }
-  
+
   .liya-ai-3d-avatar-react-widget--bottom-right,
   .liya-ai-3d-avatar-react-widget--bottom-left {
     bottom: 10px;
     right: 10px;
     left: 10px;
   }
-  
-  .liya-ai-3d-avatar-react-widget--bottom-right .liya-ai-3d-avatar-react-widget__panel,
-  .liya-ai-3d-avatar-react-widget--bottom-left .liya-ai-3d-avatar-react-widget__panel {
+
+  .liya-ai-3d-avatar-react-widget--bottom-right
+    .liya-ai-3d-avatar-react-widget__panel,
+  .liya-ai-3d-avatar-react-widget--bottom-left
+    .liya-ai-3d-avatar-react-widget__panel {
     right: 0;
     left: 0;
   }
