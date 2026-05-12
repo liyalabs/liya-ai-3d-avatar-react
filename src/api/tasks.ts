@@ -16,6 +16,7 @@
 // Liya AI - Async Task Status API (for image/video generation polling)
 
 import { getClient } from './client'
+import { logger } from '../utils/logger'
 
 /**
  * Task status values
@@ -60,7 +61,7 @@ export async function getTaskStatus(taskId: string): Promise<TaskStatusResponse 
     }
     return null
   } catch (e) {
-    console.warn('[LiyaChat] getTaskStatus error:', e)
+    logger.warn('[LiyaChat] getTaskStatus error:', e)
     return null
   }
 }
@@ -126,7 +127,7 @@ export async function pollTaskStatus(
     attempts++
   }
   
-  console.warn('[LiyaChat] pollTaskStatus: max attempts reached')
+  logger.warn('[LiyaChat] pollTaskStatus: max attempts reached')
   return null
 }
 

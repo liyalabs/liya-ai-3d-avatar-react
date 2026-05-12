@@ -36,6 +36,8 @@ export interface AvatarSpeechResponse {
 export interface TextToSpeechOptions {
   voice?: string;
   speed?: number;
+  /** BCP-47 language tag for the TTS engine, e.g. 'tr-TR', 'en-US', 'zh-CN' */
+  language?: string;
 }
 
 /**
@@ -51,12 +53,15 @@ export async function generateAvatarSpeech(
     voice: options.voice,
   });
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     text,
     voice: options.voice || "nova",
     speed: options.speed || 1.0,
     include_audio: true,
   };
+  if (options.language) {
+    payload.language = options.language;
+  }
 
   const response = await client.post<ApiResponse<AvatarSpeechResponse>>(
     "/api/v1/external/avatar/speech/",
@@ -191,6 +196,7 @@ export async function getAvatarModel(
   const client = getClient();
 
   const params = assistantId ? { assistant_id: assistantId } : {};
+
 
   try {
     const response = await client.get<ApiResponse<AvatarModelResponse>>(
