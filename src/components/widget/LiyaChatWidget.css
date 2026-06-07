@@ -561,33 +561,37 @@
   border-color: rgba(99, 102, 241, 0.7);
 }
 
-/* Lower Section - Chat Area */
+/* Lower Section - Chat Area — Liquid Glass */
 .liya-ai-3d-avatar-react-widget__lower {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--liya-bg-color);
-  border-radius: 0 0 var(--liya-border-radius) var(--liya-border-radius);
+  background: rgba(10, 16, 30, 0.72);
+  backdrop-filter: var(--liya-blur-sm, blur(10px));
+  -webkit-backdrop-filter: var(--liya-blur-sm, blur(10px));
+  border-radius: 0 0 var(--liya-border-radius-lg, 24px) var(--liya-border-radius-lg, 24px);
   overflow: hidden;
   min-height: 0;
 }
 
-/* Branding */
+/* Branding — glass footer */
 .liya-ai-3d-avatar-react-widget__branding {
-  padding: 8px;
+  padding: 7px 12px;
   text-align: center;
   font-size: 11px;
-  color: var(--liya-text-muted, #9ca3af);
-  border-top: 1px solid var(--liya-border-color, #e5e7eb);
+  color: rgba(148, 163, 184, 0.75);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
   flex-shrink: 0;
 }
 
 .liya-ai-3d-avatar-react-widget__branding a {
-  color: var(--liya-primary-color, #6366f1);
+  color: rgba(129, 140, 248, 0.9);
   text-decoration: none;
 }
 
 .liya-ai-3d-avatar-react-widget__branding a:hover {
+  color: #a5b4fc;
   text-decoration: underline;
 }
 

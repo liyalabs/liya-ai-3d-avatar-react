@@ -34,7 +34,7 @@ Liya AI 3D Talking Avatar Widget for React — AI Assistant with real-time lip-s
 - 🖼️ **Media Display** — Inline image and video rendering in chat messages
 - 💡 **Suggestions** — Quick reply suggestions
 - 🎨 **Customizable** — Theming, positioning, and branding options
-- 🌐 **i18n** — Turkish and English support
+- 🌐 **i18n** — Multi-language support (English, Turkish, Chinese) with automatic locale detection
 
 ---
 
@@ -99,44 +99,44 @@ Main floating widget with chat panel and optional avatar button.
 
 #### Props
 
-| Prop                 | Type                                                            | Default          | Description                                                   |
-| -------------------- | --------------------------------------------------------------- | ---------------- | ------------------------------------------------------------- |
-| `position`           | `'bottom-right' \| 'bottom-left' \| 'top-right' \| 'top-left'` | `'bottom-right'` | Widget position on screen                                     |
-| `theme`              | `ThemeConfig`                                                   | `{}`             | Theme customization                                           |
-| `assistantName`      | `string`                                                        | `''`             | Name of the AI assistant                                      |
-| `welcomeMessage`     | `string`                                                        | `''`             | Welcome message shown on load                                 |
-| `welcomeSuggestions` | `string[]`                                                      | `[]`             | Quick reply suggestions                                       |
-| `placeholder`        | `string`                                                        | `''`             | Chat input placeholder text                                   |
-| `showBranding`       | `boolean`                                                       | `true`           | Show Liya branding                                            |
-| `showVoice`          | `boolean`                                                       | `true`           | Show voice input button                                       |
-| `voiceEnabled`       | `boolean`                                                       | `true`           | Enable voice (false = disabled mic for STANDARD accounts)     |
-| `showAvatarButton`   | `boolean`                                                       | `true`           | Show "Talk with Avatar" button                                |
-| `avatarModelUrl`     | `string`                                                        | `''`             | URL to GLB/GLTF avatar model                                  |
-| `offsetX`            | `number`                                                        | `20`             | Horizontal offset in pixels                                   |
-| `offsetY`            | `number`                                                        | `20`             | Vertical offset in pixels                                     |
-| `liyaWidgetMode`     | `'standard' \| 'modal_kiosk' \| 'kiosk'`                        | `'standard'`     | Widget display mode                                           |
-| `autoSpeak`          | `boolean`                                                       | `true`           | Auto-speak assistant responses                                |
-| `animateButton`      | `boolean`                                                       | `true`           | Attention animation on toggle button                          |
-| `viewOnPageStart`    | `boolean`                                                       | `false`          | Auto-open widget on page load                                 |
-| `closeButtonEnabled` | `boolean`                                                       | `true`           | Show close button                                             |
-| `locale`             | `string`                                                        | `''`             | Language — `'tr'` or `'en'` (defaults to browser locale)      |
+| Prop                 | Type                                                           | Default          | Description                                               |
+| -------------------- | -------------------------------------------------------------- | ---------------- | --------------------------------------------------------- |
+| `position`           | `'bottom-right' \| 'bottom-left' \| 'top-right' \| 'top-left'` | `'bottom-right'` | Widget position on screen                                 |
+| `theme`              | `ThemeConfig`                                                  | `{}`             | Theme customization                                       |
+| `assistantName`      | `string`                                                       | `''`             | Name of the AI assistant                                  |
+| `welcomeMessage`     | `string`                                                       | `''`             | Welcome message shown on load                             |
+| `welcomeSuggestions` | `string[]`                                                     | `[]`             | Quick reply suggestions                                   |
+| `placeholder`        | `string`                                                       | `''`             | Chat input placeholder text                               |
+| `showBranding`       | `boolean`                                                      | `true`           | Show Liya branding                                        |
+| `showVoice`          | `boolean`                                                      | `true`           | Show voice input button                                   |
+| `voiceEnabled`       | `boolean`                                                      | `true`           | Enable voice (false = disabled mic for STANDARD accounts) |
+| `showAvatarButton`   | `boolean`                                                      | `true`           | Show "Talk with Avatar" button                            |
+| `avatarModelUrl`     | `string`                                                       | `''`             | URL to GLB/GLTF avatar model                              |
+| `offsetX`            | `number`                                                       | `20`             | Horizontal offset in pixels                               |
+| `offsetY`            | `number`                                                       | `20`             | Vertical offset in pixels                                 |
+| `liyaWidgetMode`     | `'standard' \| 'modal_kiosk' \| 'kiosk'`                       | `'standard'`     | Widget display mode                                       |
+| `autoSpeak`          | `boolean`                                                      | `true`           | Auto-speak assistant responses                            |
+| `animateButton`      | `boolean`                                                      | `true`           | Attention animation on toggle button                      |
+| `viewOnPageStart`    | `boolean`                                                      | `false`          | Auto-open widget on page load                             |
+| `closeButtonEnabled` | `boolean`                                                      | `true`           | Show close button                                         |
+| `locale`             | `string`                                                       | `''`             | Language — `'tr'` or `'en'` (defaults to browser locale)  |
 
 #### Widget Modes
 
-| Mode           | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `standard`     | Floating button in corner, toggles chat panel        |
-| `modal_kiosk`  | Opens as centered modal with darkened background     |
-| `kiosk`        | Full-screen experience, no toggle                    |
+| Mode          | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `standard`    | Floating button in corner, toggles chat panel    |
+| `modal_kiosk` | Opens as centered modal with darkened background |
+| `kiosk`       | Full-screen experience, no toggle                |
 
 #### Callbacks
 
-| Callback            | Payload  | Description               |
-| ------------------- | -------- | ------------------------- |
-| `onOpened`          | —        | Chat panel opened         |
-| `onClosed`          | —        | Chat panel closed         |
-| `onMessageSent`     | `string` | User sent a message       |
-| `onMessageReceived` | `string` | Assistant replied         |
+| Callback            | Payload  | Description         |
+| ------------------- | -------- | ------------------- |
+| `onOpened`          | —        | Chat panel opened   |
+| `onClosed`          | —        | Chat panel closed   |
+| `onMessageSent`     | `string` | User sent a message |
+| `onMessageReceived` | `string` | Assistant replied   |
 
 ---
 
@@ -182,7 +182,7 @@ const sceneRef = useRef<AvatarSceneHandle>(null);
   visemes={visemeData}
   currentTime={audioTime}
   lipSyncIntensity={0.5}
-/>
+/>;
 ```
 
 | Prop               | Type                     | Default | Description                              |
@@ -205,7 +205,8 @@ const sceneRef = useRef<AvatarSceneHandle>(null);
 ### `useChat`
 
 ```tsx
-const { messages, sendMessage, isLoading, currentSessionId, createSession } = useChat();
+const { messages, sendMessage, isLoading, currentSessionId, createSession } =
+  useChat();
 ```
 
 ### `useVoice`
@@ -294,8 +295,8 @@ This widget requires the **Liya AI backend**. Full OpenAPI specification availab
 
 **[Developer Docs & API Reference →](https://ai.liyalabs.com/developer)**
 
-| Language   | Spec                                                                                      |
-| ---------- | ----------------------------------------------------------------------------------------- |
+| Language   | Spec                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------- |
 | 🇬🇧 English | [LiyaAi-Api-External-V0-en.yaml](https://ai.liyalabs.com/LiyaAi-Api-External-V0-en.yaml) |
 | 🇹🇷 Türkçe  | [LiyaAi-Api-External-V0-tr.yaml](https://ai.liyalabs.com/LiyaAi-Api-External-V0-tr.yaml) |
 
@@ -305,16 +306,16 @@ This widget requires the **Liya AI backend**. Full OpenAPI specification availab
 | ------ | ----------------------------------------- | ----------------------------- |
 | POST   | `/api/v1/external/chat/`                  | Send message, get response    |
 | POST   | `/api/v1/external/chat/with-files/`       | Send message with attachments |
-| GET    | `/api/v1/external/sessions/`             | List sessions                 |
-| POST   | `/api/v1/external/sessions/`             | Create session                |
-| DELETE | `/api/v1/external/sessions/{id}/`        | Delete session                |
+| GET    | `/api/v1/external/sessions/`              | List sessions                 |
+| POST   | `/api/v1/external/sessions/`              | Create session                |
+| DELETE | `/api/v1/external/sessions/{id}/`         | Delete session                |
 | GET    | `/api/v1/external/sessions/{id}/history/` | Get chat history              |
-| POST   | `/api/v1/external/files/`                | Upload file                   |
-| GET    | `/api/v1/external/avatar/model/`         | Get avatar model URL          |
-| POST   | `/api/v1/external/avatar/tts/`           | Text-to-speech + visemes      |
-| GET    | `/api/v1/external/assistants/`           | List assistants               |
-| GET    | `/api/v1/external/access/`              | Check account access level    |
-| GET    | `/api/v1/external/config/`              | Get dynamic backend config    |
+| POST   | `/api/v1/external/files/`                 | Upload file                   |
+| GET    | `/api/v1/external/avatar/model/`          | Get avatar model URL          |
+| POST   | `/api/v1/external/avatar/tts/`            | Text-to-speech + visemes      |
+| GET    | `/api/v1/external/assistants/`            | List assistants               |
+| GET    | `/api/v1/external/access/`                | Check account access level    |
+| GET    | `/api/v1/external/config/`                | Get dynamic backend config    |
 
 ---
 
@@ -345,16 +346,19 @@ See [`examples/basic/`](./examples/basic/) for a full working React demo coverin
 ## Changelog
 
 ### 0.1.2
+
 - Replaced `console.log/warn` debug calls with internal `logger` utility
 - Removed debug block from avatar API request
 - Tasks API: `console.warn` → `logger.warn` for consistent log control
 
 ### 0.1.1
+
 - i18n support (Turkish / English)
 - Voice input improvements
 - Media display in chat messages
 
 ### 0.1.0
+
 - Initial release
 
 ---

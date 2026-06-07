@@ -17,6 +17,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import type { ThemeConfig, Session } from "../../types";
 import { useChat } from "../../hooks/useChat";
 import { useSessions } from "../../hooks/useSessions";
+import { useI18n } from "../../hooks/useI18n";
 import { getConfig, initializeClient, isInitialized } from "../../api";
 import { MessageList, ChatInput } from "../shared";
 import SessionSidebar from "./SessionSidebar";
@@ -75,7 +76,7 @@ function LiyaChatApp({
   theme = {},
   showSidebar = true,
   sidebarWidth = "300px",
-  welcomeMessage = "Merhaba! Size nasıl yardımcı olabilirim?",
+  welcomeMessage = "",
   placeholder = "Mesajınızı yazın...",
   showVoice = true,
   voiceEnabled = true,
@@ -87,6 +88,7 @@ function LiyaChatApp({
   onMessageReceived,
 }: LiyaChatAppProps) {
   const config = getConfig();
+  const { locale } = useI18n();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const {
@@ -174,7 +176,7 @@ function LiyaChatApp({
     }
 
     onMessageSent?.(message);
-    const response = await sendMessage(message);
+    const response = await sendMessage(message, undefined, locale);
     if (response?.assistant_message?.content || response?.response) {
       onMessageReceived?.(
         response.assistant_message?.content || response.response || "",

@@ -21,6 +21,41 @@ import { logger } from "../utils/logger";
 let apiClient: AxiosInstance | null = null;
 let currentConfig: LiyaChatConfig | null = null;
 
+/** Reset the singleton — call before reinitializing with new credentials */
+export function resetClient(): void {
+  apiClient = null;
+  currentConfig = null;
+  logger.log("[LiyaClient] 🔄 resetClient — singleton cleared");
+}
+
+/**
+ * Safe re-initialize: only resets if credentials actually changed.
+ * Prevents React StrictMode double-mount from wiping a valid client.
+ */
+export function reinitializeClient(config: LiyaChatConfig): AxiosInstance {
+  const credentialsChanged =
+    !currentConfig ||
+    currentConfig.apiKey !== config.apiKey ||
+    currentConfig.baseUrl !== config.baseUrl ||
+    currentConfig.assistantId !== config.assistantId;
+
+  if (credentialsChanged) {
+    logger.log(
+      "[LiyaClient] 🔄 reinitializeClient — credentials changed, reinit",
+    );
+    return initializeClient(config);
+  }
+
+  // Same credentials → reuse existing client, just update optional fields
+  if (currentConfig) {
+    currentConfig = { ...currentConfig, ...config };
+  }
+  logger.log(
+    "[LiyaClient] ♻️ reinitializeClient — same credentials, reusing existing client",
+  );
+  return apiClient!;
+}
+
 export function initializeClient(config: LiyaChatConfig): AxiosInstance {
   logger.log("[LiyaClient] 🔧 initializeClient called", {
     baseUrl: config.baseUrl,
@@ -30,6 +65,8 @@ export function initializeClient(config: LiyaChatConfig): AxiosInstance {
     locale: config.locale,
     avatarModelUrl: config.avatarModelUrl,
   });
+
+  // Always reinitialize — ensures fresh credentials on every mount
   currentConfig = config;
 
   apiClient = axios.create({

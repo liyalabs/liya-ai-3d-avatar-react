@@ -25,7 +25,8 @@ import type {
 export async function sendMessage(
   message: string,
   sessionId?: string,
-  fileIds?: string[]
+  fileIds?: string[],
+  locale?: string
 ): Promise<SendMessageResponse> {
   const client = getClient()
   const config = getConfig()
@@ -39,6 +40,7 @@ export async function sendMessage(
     message,
     session_id: sessionId,
     file_ids: fileIds,
+    response_language: locale || 'tr',
   }
 
   const response = await client.post<ApiResponse<SendMessageResponse>>(endpoint, payload)

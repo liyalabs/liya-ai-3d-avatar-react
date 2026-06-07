@@ -23,6 +23,7 @@ import React, {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import "./AvatarScene.css";
+import { logger } from "../../utils/logger";
 
 export interface AvatarSceneProps {
   modelUrl?: string;
@@ -236,42 +237,45 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
       modelUrl: "",
     });
 
+    // Helper: apply color to a mesh, handling both single and array materials
+    const applyColorToMesh = (mesh: THREE.Mesh, colorHex: string) => {
+      const materials = Array.isArray(mesh.material)
+        ? mesh.material
+        : [mesh.material];
+      materials.forEach((m) => {
+        const mat = m as THREE.MeshStandardMaterial;
+        // Clear all texture maps that could bleed through and mix with the new color
+        if (mat.map) mat.map = null;
+        if (mat.emissiveMap) mat.emissiveMap = null;
+        if (mat.normalMap) mat.normalMap = null;
+        if (mat.roughnessMap) mat.roughnessMap = null;
+        if (mat.metalnessMap) mat.metalnessMap = null;
+        if (mat.aoMap) mat.aoMap = null;
+        mat.color.set(colorHex);
+        mat.emissive.set("#000000"); // reset emissive so it doesn't tint the color
+        mat.needsUpdate = true;
+      });
+    };
+
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
       applyOutfitColors: (colors) => {
         const s = tState.current;
-        if (s.outfitTopMesh?.material) {
-          const mat = s.outfitTopMesh.material as THREE.MeshStandardMaterial;
-          if (mat.map) {
-            mat.map = null;
-            mat.needsUpdate = true;
-          }
-          mat.color.set(colors.top);
-        }
-        if (s.outfitBottomMesh?.material) {
-          const mat = s.outfitBottomMesh.material as THREE.MeshStandardMaterial;
-          if (mat.map) {
-            mat.map = null;
-            mat.needsUpdate = true;
-          }
-          mat.color.set(colors.bottom);
-        }
-        if (s.outfitFootwearMesh?.material) {
-          const mat = s.outfitFootwearMesh
-            .material as THREE.MeshStandardMaterial;
-          if (mat.map) {
-            mat.map = null;
-            mat.needsUpdate = true;
-          }
-          mat.color.set(colors.footwear);
-        }
+        if (s.outfitTopMesh) applyColorToMesh(s.outfitTopMesh, colors.top);
+        if (s.outfitBottomMesh)
+          applyColorToMesh(s.outfitBottomMesh, colors.bottom);
+        if (s.outfitFootwearMesh)
+          applyColorToMesh(s.outfitFootwearMesh, colors.footwear);
       },
     }));
 
     const applySize = (w: number, h: number) => {
       const s = tState.current;
+      // Container boyutunu CSS'e bırak — JS ile override etme.
+      // Canvas position:absolute + left:50% + translateX(-50%) ile ortalanıyor.
+      // Sadece renderer canvas boyutunu ve camera aspect ratio'sunu güncelle.
       if (containerRef.current) {
-        containerRef.current.style.width = `${w}px`;
+        // Sadece yüksekliği yaz — genişlik CSS %100'den gelecek
         containerRef.current.style.height = `${h}px`;
       }
       if (s.renderer) {
@@ -534,13 +538,13 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
     };
 
     const loadModel = (url: string) => {
-      console.log("[AvatarScene] 📡 loadModel called with URL:", url);
+      logger.log("[AvatarScene] 📡 loadModel called with URL:", url);
       const s = tState.current;
       const loader = new GLTFLoader();
       loader.load(
         url,
         (gltf) => {
-          console.log("[AvatarScene] ✅ GLTF loaded successfully", {
+          logger.log("[AvatarScene] ✅ GLTF loaded successfully", {
             url,
             animations: gltf.animations.map((a) => a.name),
             sceneChildren: gltf.scene.children.length,
@@ -578,7 +582,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
               m.morphTargetDictionary &&
               "eyeBlinkLeft" in m.morphTargetDictionary,
           );
-          console.log("[AvatarScene] 🎭 Model traversal done", {
+          logger.log("[AvatarScene] 🎭 Model traversal done", {
             morphTargetMeshes: s.morphTargetMeshes.length,
             hasEyeBlinkMorphs: s.hasEyeBlinkMorphs,
             hasLeftHand: !!s.leftHandBone,
@@ -592,10 +596,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
             );
             if (idle) {
               s.mixer.clipAction(idle).play();
-              console.log(
-                "[AvatarScene] 🎬 Playing idle animation:",
-                idle.name,
-              );
+              logger.log("[AvatarScene] 🎬 Playing idle animation:", idle.name);
             }
           }
           const box = new THREE.Box3().setFromObject(s.model);
@@ -609,14 +610,14 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
           if (progress.total > 0) {
             const pct = Math.round((progress.loaded / progress.total) * 100);
             if (pct % 25 === 0) {
-              console.log(
+              logger.log(
                 `[AvatarScene] ⏳ Loading progress: ${pct}% (${progress.loaded}/${progress.total})`,
               );
             }
           }
         },
         (err) => {
-          console.error("[AvatarScene] ❌ GLTF load error:", {
+          logger.error("[AvatarScene] ❌ GLTF load error:", {
             url,
             error: err,
             message: (err as any)?.message,
@@ -633,7 +634,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
     useEffect(() => {
       const s = tState.current;
       const { modelUrl, backgroundColor, width, height } = propsRef.current;
-      console.log("[AvatarScene] 🎬 Scene init useEffect", {
+      logger.log("[AvatarScene] 🎬 Scene init useEffect", {
         modelUrl,
         backgroundColor,
         width,
@@ -641,18 +642,39 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
         hasContainer: !!containerRef.current,
       });
       if (!containerRef.current) {
-        console.error(
+        logger.error(
           "[AvatarScene] ❌ containerRef is null — cannot init scene",
         );
         return;
       }
       // Guard: prevent double-init (React Strict Mode)
-      if (s.scene) {
-        console.warn(
+      // If scene already exists AND renderer is still attached to the DOM, skip.
+      if (
+        s.scene &&
+        s.renderer &&
+        containerRef.current.contains(s.renderer.domElement)
+      ) {
+        logger.warn(
           "[AvatarScene] ⚠️ Scene already initialised — skipping duplicate init",
         );
         return;
       }
+      // Clean up any stale state from a previous (StrictMode) mount
+      if (s.renderer) {
+        try {
+          s.renderer.dispose();
+        } catch (_) {}
+        if (containerRef.current.contains(s.renderer.domElement)) {
+          containerRef.current.removeChild(s.renderer.domElement);
+        }
+        s.renderer = null;
+      }
+      s.scene = null;
+      s.camera = null;
+      s.model = null;
+      s.mixer = null;
+      s.morphTargetMeshes = [];
+      s.modelUrl = "";
       s.scene = new THREE.Scene();
       s.camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 1000);
       s.camera.position.set(0, 1.48, 1.5);
@@ -668,31 +690,35 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
       // Set clear color based on backgroundColor prop
       if (isTransparent) {
         s.renderer.setClearColor(0x000000, 0); // Transparent
+        // Force canvas element itself to be transparent (cross-browser)
+        s.renderer.domElement.style.background = "transparent";
       } else {
         // Parse hex color or use default
         const colorInt = backgroundColor.startsWith("#")
           ? parseInt(backgroundColor.slice(1), 16)
           : 0x1a1a2e;
         s.renderer.setClearColor(colorInt, 1);
+        s.renderer.domElement.style.background = backgroundColor;
       }
 
+      // Append canvas FIRST so applySize can read container dimensions
+      containerRef.current.appendChild(s.renderer.domElement);
       applySize(width, height);
       s.renderer.outputColorSpace = THREE.SRGBColorSpace;
-      containerRef.current.appendChild(s.renderer.domElement);
       s.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
       const keyL = new THREE.DirectionalLight(0xffffff, 1.2);
       keyL.position.set(2, 3, 2);
       s.scene.add(keyL);
       s.clock = new THREE.Clock();
       if (modelUrl) {
-        console.log(
+        logger.log(
           "[AvatarScene] 🔗 modelUrl present on init, loading:",
           modelUrl,
         );
         s.modelUrl = modelUrl;
         loadModel(modelUrl);
       } else {
-        console.warn(
+        logger.warn(
           "[AvatarScene] ⚠️ modelUrl is EMPTY on init — using default avatar placeholder",
         );
         createDefaultAvatar(s);
@@ -701,13 +727,31 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
       animateRef.current();
       return () => {
         s.isAnimating = false;
-        if (s.animationFrameId) cancelAnimationFrame(s.animationFrameId);
-        if (s.renderer) {
-          s.renderer.dispose();
-          s.renderer.forceContextLoss();
+        if (s.animationFrameId) {
+          cancelAnimationFrame(s.animationFrameId);
+          s.animationFrameId = null;
         }
-        // Reset scene so a remount can reinit cleanly
+        if (s.renderer) {
+          // Remove canvas from DOM BEFORE dispose to avoid WebGL context loss
+          // leaving a blank/white canvas attached.
+          if (
+            containerRef.current &&
+            containerRef.current.contains(s.renderer.domElement)
+          ) {
+            containerRef.current.removeChild(s.renderer.domElement);
+          }
+          s.renderer.dispose();
+          // forceContextLoss() is intentionally OMITTED here — it permanently
+          // destroys the GL context so a remount (StrictMode) cannot reuse it.
+          s.renderer = null;
+        }
         s.scene = null;
+        s.camera = null;
+        s.model = null;
+        s.mixer = null;
+        s.morphTargetMeshes = [];
+        s.modelUrl = "";
+        s.isAnimating = false;
       };
     }, []); // ← mount-only, intentionally empty deps
 
@@ -729,7 +773,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
     // ─── modelUrl change handler ───────────────────────────────────────────────
     useEffect(() => {
       const s = tState.current;
-      console.log("[AvatarScene] 🔄 modelUrl useEffect triggered", {
+      logger.log("[AvatarScene] 🔄 modelUrl useEffect triggered", {
         modelUrl,
         prevModelUrl: s.modelUrl,
         hasScene: !!s.scene,
@@ -738,7 +782,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
       // Scene may not be ready yet on first render (init effect runs after)
       if (!s.scene) return;
       if (modelUrl && s.modelUrl !== modelUrl) {
-        console.log("[AvatarScene] 🔁 Reloading model — URL changed:", {
+        logger.log("[AvatarScene] 🔁 Reloading model — URL changed:", {
           from: s.modelUrl,
           to: modelUrl,
         });
@@ -746,7 +790,7 @@ const AvatarScene = forwardRef<AvatarSceneHandle, AvatarSceneProps>(
         s.modelUrl = modelUrl;
         loadModel(modelUrl);
       } else if (!modelUrl) {
-        console.warn(
+        logger.warn(
           "[AvatarScene] ⚠️ modelUrl is empty — avatar will NOT be loaded",
         );
       }

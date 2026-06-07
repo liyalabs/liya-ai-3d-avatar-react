@@ -1,6 +1,6 @@
 /**
  * ==================================================
- * ██╗     ██╗██╗   ██╗ █████╗ 
+ * ██╗     ██╗██╗   ██╗ █████╗
  * ██║     ██║╚██╗ ██╔╝██╔══██╗
  * ██║     ██║ ╚████╔╝ ███████║
  * ██║     ██║  ╚██╔╝  ██╔══██║
@@ -15,20 +15,23 @@
  */
 
 // Components
-export * from './components/widget'
-export * from './components/app'
-export * from './components/shared'
+export * from "./components/widget";
+export * from "./components/app";
+export * from "./components/shared";
 
-// Hooks
-export * from './hooks/useChat'
-export * from './hooks/useVoice'
-export * from './hooks/useAvatarColors'
-export * from './hooks/useI18n'
-export * from './hooks/useSessions'
+// Hooks — resetGlobalChat is exported from useChat for external cleanup
+export * from "./hooks/useChat";
+export * from "./hooks/useVoice";
+export * from "./hooks/useAvatarColors";
+export * from "./hooks/useI18n";
+export * from "./hooks/useSessions";
 
 // API & Types
-export * from './api'
-export * from './types'
+export * from "./api";
+export * from "./types";
 
 // Utils
-export * from './utils/color'
+export * from "./utils/color";
+
+// Styles
+import "./components/widget/LiyaAvatarWidget.css";

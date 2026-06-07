@@ -50,6 +50,24 @@ declare global {
 // Global state to avoid multiple instances issues
 let recognition: SpeechRecognition | null = null;
 
+const MIC_PERMISSION_KEY = "liya_mic_permission";
+
+function readMicPermissionCache(): "prompt" | "granted" | "denied" {
+  if (typeof localStorage === "undefined") return "prompt";
+  const val = localStorage.getItem(MIC_PERMISSION_KEY);
+  if (val === "granted" || val === "denied") return val;
+  return "prompt";
+}
+
+function writeMicPermissionCache(val: "prompt" | "granted" | "denied") {
+  if (typeof localStorage === "undefined") return;
+  if (val === "prompt") {
+    localStorage.removeItem(MIC_PERMISSION_KEY);
+  } else {
+    localStorage.setItem(MIC_PERMISSION_KEY, val);
+  }
+}
+
 export function useVoice(locale = "tr-TR") {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -57,7 +75,13 @@ export function useVoice(locale = "tr-TR") {
   const [error, setError] = useState<string | null>(null);
   const [micPermission, setMicPermission] = useState<
     "prompt" | "granted" | "denied"
-  >("prompt");
+  >(readMicPermissionCache);
+
+  // Ref mirror'ları: recognition handler'ları (onend, onerror) stale closure'dan
+  // etkilenmesin diye en güncel state'e her zaman ref üzerinden eriş.
+  const isRecordingRef = useRef(false);
+  const transcriptRef = useRef("");
+  const interimTranscriptRef = useRef("");
 
   const SpeechRecognitionAPI = useMemo(
     () =>
@@ -87,6 +111,21 @@ export function useVoice(locale = "tr-TR") {
     return !isOpera;
   }, [SpeechRecognitionAPI]);
 
+  // Ref'leri state ile senkron tut
+  // (her render'da çalışır, useEffect gerektirmez)
+  isRecordingRef.current = isRecording;
+  transcriptRef.current = transcript;
+  interimTranscriptRef.current = interimTranscript;
+
+  // localStorage'a da yazan setter
+  const setMicPermissionPersist = useCallback(
+    (val: "prompt" | "granted" | "denied") => {
+      writeMicPermissionCache(val);
+      setMicPermission(val);
+    },
+    [],
+  );
+
   const checkMicPermission = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.permissions)
       return "prompt";
@@ -94,13 +133,13 @@ export function useVoice(locale = "tr-TR") {
       const result = await navigator.permissions.query({
         name: "microphone" as PermissionName,
       });
-      setMicPermission(result.state as any);
-      result.onchange = () => setMicPermission(result.state as any);
+      setMicPermissionPersist(result.state as any);
+      result.onchange = () => setMicPermissionPersist(result.state as any);
       return result.state as any;
     } catch {
       return "prompt";
     }
-  }, []);
+  }, [setMicPermissionPersist]);
 
   const requestMicPermission = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices)
@@ -108,12 +147,27 @@ export function useVoice(locale = "tr-TR") {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
-      setMicPermission("granted");
+      setMicPermissionPersist("granted");
       return true;
     } catch {
-      setMicPermission("denied");
+      setMicPermissionPersist("denied");
       return false;
     }
+  }, [setMicPermissionPersist]);
+
+  // Mount'ta Permissions API ile localStorage'ı doğrula / güncelle
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.permissions) return;
+    navigator.permissions
+      .query({ name: "microphone" as PermissionName })
+      .then((result) => {
+        setMicPermissionPersist(result.state as any);
+        result.onchange = () => setMicPermissionPersist(result.state as any);
+      })
+      .catch(() => {
+        /* Permissions API desteklenmiyorsa cache'den okunan değer kalır */
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initRecognition = useCallback(() => {
@@ -126,6 +180,7 @@ export function useVoice(locale = "tr-TR") {
 
     recognition.onstart = () => {
       logger.log("[useVoice] 🎙️ Recognition started");
+      isRecordingRef.current = true;
       setIsRecording(true);
       setError(null);
     };
@@ -139,7 +194,14 @@ export function useVoice(locale = "tr-TR") {
         else interim += result[0].transcript;
       }
       logger.log("[useVoice] 📝 Result received", { final, interim });
-      if (final) setTranscript((prev) => prev + (prev ? " " : "") + final);
+      if (final) {
+        setTranscript((prev) => {
+          const next = prev + (prev ? " " : "") + final;
+          transcriptRef.current = next;
+          return next;
+        });
+      }
+      interimTranscriptRef.current = interim;
       setInterimTranscript(interim);
     };
 
@@ -149,12 +211,15 @@ export function useVoice(locale = "tr-TR") {
         message: event.message,
       });
       setError(getErrorMessage(event.error));
+      isRecordingRef.current = false;
       setIsRecording(false);
     };
 
     recognition.onend = () => {
       logger.log("[useVoice] 🏁 Recognition ended");
+      isRecordingRef.current = false;
       setIsRecording(false);
+      interimTranscriptRef.current = "";
       setInterimTranscript("");
     };
   }, [SpeechRecognitionAPI, locale]);
@@ -165,7 +230,10 @@ export function useVoice(locale = "tr-TR") {
       return;
     }
     initRecognition();
-    if (recognition && !isRecording) {
+    // Ref'den oku — stale closure tehlikesi yok
+    if (recognition && !isRecordingRef.current) {
+      transcriptRef.current = "";
+      interimTranscriptRef.current = "";
       setTranscript("");
       setInterimTranscript("");
       setError(null);
@@ -175,24 +243,29 @@ export function useVoice(locale = "tr-TR") {
         setError("Failed to start");
       }
     }
-  }, [isSupported, locale, initRecognition, isRecording]);
+  }, [isSupported, locale, initRecognition]);
 
   const stopRecording = useCallback((): string => {
+    // Ref'lerden oku — stale closure tehlikesi yok, her zaman güncel değer
+    const currentTranscript = transcriptRef.current;
+    const currentInterim = interimTranscriptRef.current;
     logger.log("[useVoice] 🛑 stopRecording called", {
-      isRecording,
-      transcript,
-      interimTranscript,
+      isRecording: isRecordingRef.current,
+      transcript: currentTranscript,
+      interimTranscript: currentInterim,
     });
-    if (recognition && isRecording) recognition.stop();
-    const finalResult = (transcript + " " + interimTranscript).trim();
+    if (recognition && isRecordingRef.current) recognition.stop();
+    const finalResult = (currentTranscript + " " + currentInterim).trim();
     return finalResult;
-  }, [isRecording, transcript, interimTranscript]);
+  }, []);
 
   const cancelRecording = useCallback(() => {
-    if (recognition && isRecording) recognition.abort();
+    if (recognition && isRecordingRef.current) recognition.abort();
+    transcriptRef.current = "";
+    interimTranscriptRef.current = "";
     setTranscript("");
     setInterimTranscript("");
-  }, [isRecording]);
+  }, []);
 
   const clearTranscript = useCallback(() => {
     setTranscript("");
@@ -212,10 +285,11 @@ export function useVoice(locale = "tr-TR") {
 
   useEffect(() => {
     return () => {
-      if (recognition && isRecording) recognition.abort();
+      if (recognition && isRecordingRef.current) recognition.abort();
       recognition = null;
     };
-  }, [isRecording]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     isRecording,

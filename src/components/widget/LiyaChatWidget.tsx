@@ -222,7 +222,7 @@ export default function LiyaChatWidget({
       try {
         setIsPreparingSpeech(true);
         const res = await fetch(
-          `${config.apiUrl}/api/v1/external/avatar/speech/`,
+          `${config.baseUrl}/api/v1/external/avatar/speech/`,
           {
             method: "POST",
             headers: {
@@ -248,7 +248,7 @@ export default function LiyaChatWidget({
         setIsPreparingSpeech(false);
       }
     },
-    [config.apiUrl, config.apiKey, playAudio],
+    [config.baseUrl, config.apiKey, playAudio],
   );
 
   // Apply avatar colors
@@ -303,12 +303,15 @@ export default function LiyaChatWidget({
       }
 
       onMessageSent?.(message);
-      const response = await sendMessage(message, uploadedFileIds);
+      const response = await sendMessage(message, uploadedFileIds, locale);
 
-      if (response?.assistant_message?.content || response?.response) {
+      // response null/undefined kontrolü — backend'den boş veya hatalı yanıt gelebilir
+      if (response) {
         const text =
           response.assistant_message?.content || response.response || "";
-        onMessageReceived?.(text);
+        if (text) {
+          onMessageReceived?.(text);
+        }
       }
 
       clearFiles();
@@ -320,6 +323,7 @@ export default function LiyaChatWidget({
       clearFiles,
       onMessageSent,
       onMessageReceived,
+      locale,
     ],
   );
 
@@ -360,12 +364,14 @@ export default function LiyaChatWidget({
     }
   }, [isOpen, closeWidget, openWidget]);
 
-  // Toggle locale
+  // Cycle locale: tr → en → zh → tr
   const toggleLocale = useCallback(() => {
-    setLocale(locale === "tr" ? "en" : "tr");
+    const next = locale === "tr" ? "en" : locale === "en" ? "zh" : "tr";
+    setLocale(next);
   }, [locale, setLocale]);
 
-  const nextLocaleLabel = locale === "tr" ? "EN" : "TR";
+  const nextLocaleLabel =
+    locale === "tr" ? "EN" : locale === "en" ? "ZH" : "TR";
 
   // Handle replay or stop
   const handleReplayOrStop = useCallback(() => {

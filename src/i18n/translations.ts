@@ -153,11 +153,12 @@ export const translations: Record<SupportedLocale, Translations> = {
       send: "Gönder",
       typing: "Yazıyor...",
       welcomeMessage:
-        "Bu chat hizmeti Liya AI tarafından sağlanmaktadır. Size bugün nasıl yardımcı olabilirim?",
+        "Merhaba! Ben Liya — LiyaLabs'ın yapay zeka asistanıyım. 🤖\nŞu an @liyalabs/liya-3d-avatar-widget-react paketinin demo uygulamasındasınız. Size nasıl yardımcı olabilirim?",
       welcomeSuggestions: [
-        "Liya AI 3D Avatar Widget nedir?",
-        "Liya AI hakkında bilgi ver",
-        "Liyalabs şirketini tanıt",
+        "LiyaLabs'ın ürünleri neler?",
+        "Liya AI Coding Agent nedir?",
+        "Liya 3D Avatar Widget'ı nasıl kullanabilirim?",
+        "LiyaLabs hakkında bilgi ver",
       ],
     },
     voice: {
@@ -186,7 +187,8 @@ export const translations: Record<SupportedLocale, Translations> = {
       speaking: "Konuşuyor...",
       hideMessages: "Mesajları gizle",
       showMessages: "Mesajları göster",
-      micDenied: "Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.",
+      micDenied:
+        "Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından izin verin.",
       micPermissionNeeded: "Mikrofon izni gerekli",
       allowMic: "Mikrofona İzin Ver",
     },
@@ -267,11 +269,12 @@ export const translations: Record<SupportedLocale, Translations> = {
       send: "Send",
       typing: "Typing...",
       welcomeMessage:
-        "This chat service is provided by Liya AI. How can I help you today?",
+        "Hi! I'm Liya — LiyaLabs' AI assistant. 🤖\nYou're currently viewing the demo of the @liyalabs/liya-3d-avatar-widget-react package. How can I help you?",
       welcomeSuggestions: [
-        "What is Liya AI 3D Avatar Widget?",
-        "Tell me about Liya AI",
-        "Introduce Liyalabs company",
+        "What products does LiyaLabs offer?",
+        "What is Liya AI Coding Agent?",
+        "How can I use the Liya 3D Avatar Widget?",
+        "Tell me about LiyaLabs",
       ],
     },
     voice: {
@@ -380,11 +383,13 @@ export const translations: Record<SupportedLocale, Translations> = {
       placeholder: "请输入您的消息...",
       send: "发送",
       typing: "正在输入...",
-      welcomeMessage: "此聊天服务由 Liya AI 提供。今天我能为您做什么？",
+      welcomeMessage:
+        "你好！我是 Liya — LiyaLabs 的 AI 助手。🤖\n您正在体验 @liyalabs/liya-3d-avatar-widget-react 包的演示应用。有什么可以帮您的吗？",
       welcomeSuggestions: [
-        "Liya AI 3D 头像小部件是什么？",
-        "介绍一下 Liya AI",
-        "介绍 Liyalabs 公司",
+        "LiyaLabs 提供哪些产品？",
+        "什么是 Liya AI 编程助手？",
+        "如何使用 Liya 3D 头像小部件？",
+        "介绍 LiyaLabs 公司",
       ],
     },
     voice: {
@@ -474,7 +479,7 @@ export function isSupportedLocale(locale: string): locale is SupportedLocale {
 
 export function detectBrowserLocale(): SupportedLocale {
   if (typeof window === "undefined" || typeof navigator === "undefined") {
-    return "tr";
+    return "en";
   }
 
   const browserLang =
@@ -487,7 +492,7 @@ export function detectBrowserLocale(): SupportedLocale {
     return langCode;
   }
 
-  return "tr";
+  return "en"; // Default to English if unsupported
 }
 
 /** Map i18n locale code → BCP-47 language tag used by TTS / SpeechRecognition */

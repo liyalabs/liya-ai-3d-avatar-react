@@ -2,10 +2,11 @@
   display: flex;
   height: 100%;
   width: 100%;
-  background: var(--liya-bg-color, #ffffff);
+  background: var(--liya-bg-color, rgba(15, 23, 42, 0.92));
   font-family: var(--liya-font-family, system-ui, -apple-system, sans-serif);
   position: relative;
   overflow: hidden;
+  color: var(--liya-text-color, #f1f5f9);
 }
 
 .liya-ai-3d-avatar-react-app__mobile-header {
@@ -15,8 +16,10 @@
   left: 0;
   right: 0;
   height: 56px;
-  background: var(--liya-bg-color, #ffffff);
-  border-bottom: 1px solid var(--liya-border-color, #e5e7eb);
+  background: var(--liya-bg-color, rgba(15, 23, 42, 0.96));
+  backdrop-filter: var(--liya-blur-sm, blur(10px));
+  -webkit-backdrop-filter: var(--liya-blur-sm, blur(10px));
+  border-bottom: 1px solid var(--liya-border-color, rgba(255, 255, 255, 0.10));
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
@@ -29,7 +32,7 @@
   height: 40px;
   border: none;
   background: transparent;
-  color: var(--liya-text-color, #374151);
+  color: var(--liya-text-color, #f1f5f9);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -39,13 +42,13 @@
 
 .liya-ai-3d-avatar-react-app__menu-btn:hover,
 .liya-ai-3d-avatar-react-app__new-btn:hover {
-  background: var(--liya-bg-secondary, #f3f4f6);
+  background: var(--liya-bg-glass-hover, rgba(255, 255, 255, 0.10));
 }
 
 .liya-ai-3d-avatar-react-app__mobile-title {
   font-weight: 600;
   font-size: 16px;
-  color: var(--liya-text-color, #374151);
+  color: var(--liya-text-color, #f1f5f9);
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -79,8 +82,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--liya-border-color, #e5e7eb);
-  background: var(--liya-bg-color, #ffffff);
+  border-bottom: 1px solid var(--liya-border-color, rgba(255, 255, 255, 0.10));
+  background: var(--liya-bg-secondary, rgba(30, 41, 59, 0.80));
+  backdrop-filter: var(--liya-blur-sm, blur(10px));
+  -webkit-backdrop-filter: var(--liya-blur-sm, blur(10px));
 }
 
 .liya-ai-3d-avatar-react-app__header-info {
@@ -109,12 +114,12 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: var(--liya-text-color, #374151);
+  color: var(--liya-text-color, #f1f5f9);
 }
 
 .liya-ai-3d-avatar-react-app__status {
   font-size: 13px;
-  color: var(--liya-text-muted, #9ca3af);
+  color: var(--liya-text-muted, #94a3b8);
 }
 
 @media (max-width: 768px) {

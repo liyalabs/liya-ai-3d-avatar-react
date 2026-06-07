@@ -54,18 +54,33 @@
   }
 }
 
-/* Chat Panel */
+/* Chat Panel — Liquid Glass */
 .liya-ai-3d-avatar-react-widget__panel {
-  position: absolute;
+  position: fixed;
   width: 380px;
   height: 550px;
   max-height: calc(100vh - 100px);
-  background: var(--liya-bg-color);
-  border-radius: var(--liya-border-radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  /* Liquid glass: dark translucent base */
+  background: linear-gradient(
+    160deg,
+    rgba(15, 23, 42, 0.88) 0%,
+    rgba(10, 16, 32, 0.94) 100%
+  );
+  backdrop-filter: var(--liya-blur, blur(20px));
+  -webkit-backdrop-filter: var(--liya-blur, blur(20px));
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--liya-border-radius-lg, 24px);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(99, 102, 241, 0.08) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: calc(var(--liya-z-index, 9999) + 1);
   animation: liya-slide-up 0.3s ease;
 }
 
@@ -82,22 +97,41 @@
 
 .liya-ai-3d-avatar-react-widget--bottom-right
   .liya-ai-3d-avatar-react-widget__panel {
-  bottom: 70px;
-  right: 0;
+  bottom: calc(var(--liya-offset-y, 20px) + 70px);
+  right: var(--liya-offset-x, 20px);
 }
 
 .liya-ai-3d-avatar-react-widget--bottom-left
   .liya-ai-3d-avatar-react-widget__panel {
-  bottom: 70px;
-  left: 0;
+  bottom: calc(var(--liya-offset-y, 20px) + 70px);
+  left: var(--liya-offset-x, 20px);
 }
 
-/* Upper section with avatar */
+/* Upper section with avatar — Liquid Glass Morphism */
 .liya-ai-3d-avatar-react-widget__upper {
   position: relative;
   height: 240px;
   flex-shrink: 0;
   overflow: hidden;
+  background: radial-gradient(
+    ellipse 120% 120% at 50% 130%,
+    rgba(99, 102, 241, 0.25) 0%,
+    rgba(15, 23, 42, 0.92) 60%,
+    rgba(8, 12, 24, 1) 100%
+  );
+}
+
+.liya-ai-3d-avatar-react-widget__upper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% -20%,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 .liya-ai-3d-avatar-react-widget__avatar-container {
@@ -378,21 +412,23 @@
   border-color: rgba(99, 102, 241, 0.7);
 }
 
-/* Branding */
+/* Branding — glass footer */
 .liya-ai-3d-avatar-react-widget__branding {
-  padding: 8px;
+  padding: 7px 12px;
   text-align: center;
   font-size: 11px;
-  color: #9ca3af;
-  border-top: 1px solid #e5e7eb;
+  color: rgba(148, 163, 184, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .liya-ai-3d-avatar-react-widget__branding a {
-  color: #6366f1;
+  color: rgba(129, 140, 248, 0.9);
   text-decoration: none;
 }
 
 .liya-ai-3d-avatar-react-widget__branding a:hover {
+  color: #a5b4fc;
   text-decoration: underline;
 }
 
@@ -400,32 +436,53 @@
 .liya-ai-3d-avatar-react-kiosk {
   position: fixed;
   inset: 0;
-  z-index: 99999;
+  z-index: var(--liya-z-index, 99999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* iOS safe area */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   background: radial-gradient(
     ellipse at 50% 120%,
     rgba(99, 102, 241, 0.18) 0%,
     rgba(8, 12, 24, 0.97) 60%
   );
+}
+
+/* modal_kiosk: arka plan transparent — overlay ayrı element */
+.liya-ai-3d-avatar-react-kiosk--modal {
+  background: transparent;
+}
+
+/* Kiosk içerik sarmalayıcı */
+.liya-ai-3d-avatar-react-kiosk__content {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
-/* modal_kiosk: yarı-saydam overlay */
-.liya-ai-3d-avatar-react-kiosk--modal::before {
-  content: "";
-  position: fixed;
+/* Overlay katmanı (modal_kiosk backdrop) */
+.liya-ai-3d-avatar-react-kiosk__overlay {
+  position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse at center,
-    rgba(8, 12, 24, 0.55) 0%,
-    rgba(8, 12, 24, 0.75) 100%
+    circle at top,
+    rgba(30, 41, 59, 0.4),
+    rgba(8, 12, 24, 0.75)
   );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  pointer-events: none;
-  z-index: 0;
+  pointer-events: none !important;
 }
 
 /* modal_kiosk: daha dar container */
@@ -435,188 +492,227 @@
   height: 100%;
 }
 
-/* modal_kiosk: arka plan daha saydam */
-.liya-ai-3d-avatar-react-kiosk--modal {
-  background: transparent;
-}
-
 .liya-ai-3d-avatar-react-kiosk__container {
-  flex: 1;
+  position: relative;
+  width: min(960px, 100%);
+  height: 100%;
+  padding: calc(clamp(24px, 3vh, 60px) + env(safe-area-inset-top, 0px))
+    clamp(16px, 2vw, 48px) clamp(24px, 3vh, 48px);
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
-.liya-ai-3d-avatar-react-kiosk__scene-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
   z-index: 1;
 }
 
-.liya-ai-3d-avatar-react-kiosk__controls {
+/* Avatar section — flex 1, fills space above controls */
+.liya-ai-3d-avatar-react-kiosk__avatar {
   position: relative;
-  z-index: 10;
-  margin-top: auto;
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  background: linear-gradient(
-    to top,
-    rgba(15, 23, 42, 0.95) 0%,
-    transparent 100%
-  );
-}
-
-.liya-ai-3d-avatar-react-kiosk__messages {
   width: 100%;
-  max-width: 600px;
-  max-height: 200px;
-  overflow-y: auto;
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 200px;
+  max-height: clamp(400px, 75vh, 1100px);
+  z-index: 2;
+  overflow: hidden;
 }
 
-.liya-ai-3d-avatar-react-kiosk__message {
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.4;
-  color: white;
+/* modal_kiosk: avatar yatay + dikey ortala */
+.liya-ai-3d-avatar-react-kiosk--modal .liya-ai-3d-avatar-react-kiosk__avatar {
+  align-items: center;
+  justify-content: center;
 }
 
-.liya-ai-3d-avatar-react-kiosk__message.user {
-  background: rgba(99, 102, 241, 0.3);
-  border-left: 2px solid #6366f1;
-}
-
-.liya-ai-3d-avatar-react-kiosk__message.assistant {
-  background: rgba(59, 130, 246, 0.2);
-  border-left: 2px solid #3b82f6;
-}
-
-/* Status Indicator */
+/* Floating status badge inside avatar area */
 .liya-ai-3d-avatar-react-kiosk__status {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
+  gap: calc(8px * var(--liya-ui-scale, 1));
+  padding: calc(8px * var(--liya-ui-scale, 1))
+    calc(14px * var(--liya-ui-scale, 1));
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: calc(24px * var(--liya-ui-scale, 1));
+  z-index: 10;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .liya-ai-3d-avatar-react-kiosk__status-dot {
-  width: 8px;
-  height: 8px;
+  width: calc(8px * var(--liya-ui-scale, 1));
+  height: calc(8px * var(--liya-ui-scale, 1));
   border-radius: 50%;
-  background: #10b981;
+  background: #9ca3af;
   flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
-.liya-ai-3d-avatar-react-kiosk__status-dot--idle {
-  background: #10b981;
+.liya-ai-3d-avatar-react-kiosk__status--idle
+  .liya-ai-3d-avatar-react-kiosk__status-dot {
+  background: #22c55e;
 }
 
-.liya-ai-3d-avatar-react-kiosk__status-dot--listening {
-  background: #f59e0b;
+.liya-ai-3d-avatar-react-kiosk__status--listening
+  .liya-ai-3d-avatar-react-kiosk__status-dot {
+  background: #3b82f6;
   animation: liya-pulse-dot 1s infinite;
 }
 
-.liya-ai-3d-avatar-react-kiosk__status-dot--preparing {
+.liya-ai-3d-avatar-react-kiosk__status--preparing
+  .liya-ai-3d-avatar-react-kiosk__status-dot {
   background: #f59e0b;
-  animation: liya-pulse-dot 1.5s infinite;
-}
-
-.liya-ai-3d-avatar-react-kiosk__status-dot--speaking {
-  background: #ef4444;
   animation: liya-pulse-dot 0.8s infinite;
 }
 
+.liya-ai-3d-avatar-react-kiosk__status--speaking
+  .liya-ai-3d-avatar-react-kiosk__status-dot {
+  background: #8b5cf6;
+  animation: liya-pulse-dot 0.5s infinite;
+}
+
 .liya-ai-3d-avatar-react-kiosk__status-text {
-  color: white;
-  font-size: 14px;
+  font-size: calc(13px * var(--liya-ui-scale, 1));
   font-weight: 500;
-  flex: 1;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
 }
 
 .liya-ai-3d-avatar-react-kiosk__status-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: calc(24px * var(--liya-ui-scale, 1));
+  height: calc(24px * var(--liya-ui-scale, 1));
+  padding: 0;
+  margin-left: calc(4px * var(--liya-ui-scale, 1));
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .liya-ai-3d-avatar-react-kiosk__status-btn:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  color: white;
+  transform: scale(1.1);
 }
 
 .liya-ai-3d-avatar-react-kiosk__lang-btn {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 0;
   width: auto;
-  min-width: 32px;
+  padding: 0 calc(8px * var(--liya-ui-scale, 1));
+  border-radius: calc(12px * var(--liya-ui-scale, 1));
 }
 
-/* Mic Button */
-.liya-ai-3d-avatar-react-kiosk__mic {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border: none;
-  color: white;
+.liya-ai-3d-avatar-react-kiosk__lang-text {
+  font-size: calc(10px * var(--liya-ui-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Controls — bottom panel */
+.liya-ai-3d-avatar-react-kiosk__controls {
+  width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  gap: calc(18px * var(--liya-ui-scale, 1));
+  padding-bottom: calc(24px * var(--liya-ui-scale, 1));
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
-.liya-ai-3d-avatar-react-kiosk__mic:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+.liya-ai-3d-avatar-react-kiosk__messages {
+  width: clamp(
+    calc(320px * var(--liya-ui-scale, 1)),
+    40vw,
+    calc(720px * var(--liya-ui-scale, 1))
+  );
+  max-height: clamp(
+    calc(160px * var(--liya-ui-scale, 1)),
+    22vh,
+    calc(320px * var(--liya-ui-scale, 1))
+  );
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.7) 0%,
+    rgba(15, 23, 42, 0.8) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: calc(20px * var(--liya-ui-scale, 1));
+  padding: calc(14px * var(--liya-ui-scale, 1))
+    calc(16px * var(--liya-ui-scale, 1));
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--liya-ui-scale, 1));
 }
 
-.liya-ai-3d-avatar-react-kiosk__mic:active {
-  transform: scale(0.95);
+.liya-ai-3d-avatar-react-kiosk__messages::after {
+  content: "";
+  display: block;
+  min-height: 6px;
+  flex-shrink: 0;
 }
 
-/* Hint text */
-.liya-ai-3d-avatar-react-kiosk__hint {
+.liya-ai-3d-avatar-react-kiosk__message {
+  font-size: calc(13px * var(--liya-ui-scale, 1));
+  line-height: 1.5;
+  padding: calc(10px * var(--liya-ui-scale, 1))
+    calc(14px * var(--liya-ui-scale, 1));
+  border-radius: calc(12px * var(--liya-ui-scale, 1));
+  max-width: 85%;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.liya-ai-3d-avatar-react-kiosk__message-text {
   margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  text-align: center;
+}
+
+.liya-ai-3d-avatar-react-kiosk__message--user {
+  align-self: flex-end;
+  background: rgba(99, 102, 241, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.liya-ai-3d-avatar-react-kiosk__message--assistant {
+  align-self: flex-start;
+  background: rgba(51, 65, 85, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: left;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Message box toggle */
 .liya-ai-3d-avatar-react-kiosk__toggle-msg-btn {
-  width: 40px;
-  height: 40px;
+  width: calc(40px * var(--liya-ui-scale, 1));
+  height: calc(40px * var(--liya-ui-scale, 1));
   border-radius: 50%;
   background: rgba(99, 102, 241, 0.3);
   border: 1px solid rgba(99, 102, 241, 0.5);
@@ -626,12 +722,83 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .liya-ai-3d-avatar-react-kiosk__toggle-msg-btn:hover {
   background: rgba(99, 102, 241, 0.4);
   border-color: rgba(99, 102, 241, 0.7);
   transform: scale(1.05);
+}
+
+/* Mic Button */
+.liya-ai-3d-avatar-react-kiosk__mic {
+  width: calc(72px * var(--liya-ui-scale, 1));
+  height: calc(72px * var(--liya-ui-scale, 1));
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.9),
+    rgba(139, 92, 246, 0.9)
+  );
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 36px rgba(99, 102, 241, 0.35);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.45);
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic--active {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.9),
+    rgba(249, 115, 22, 0.9)
+  );
+  animation: liya-kiosk-mic-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 20px 40px rgba(239, 68, 68, 0.4);
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic--not-supported {
+  opacity: 0.6;
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  box-shadow: 0 8px 24px rgba(107, 114, 128, 0.3);
+}
+
+@keyframes liya-kiosk-mic-pulse {
+  0%,
+  100% {
+    box-shadow: 0 16px 36px rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    box-shadow: 0 24px 48px rgba(239, 68, 68, 0.55);
+  }
+}
+
+/* Hint text */
+.liya-ai-3d-avatar-react-kiosk__hint {
+  margin: 0;
+  font-size: calc(13px * var(--liya-ui-scale, 1));
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
 }
 
 /* Scrollbar styling */
@@ -651,106 +818,6 @@
 
 .liya-ai-3d-avatar-react-kiosk__messages::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
-}
-
-/* ===== KIOSK RESPONSIVE ===== */
-/* Büyük ekran (≥1200px) — container'ı ortala, genişlik sınırla */
-@media (min-width: 1200px) {
-  .liya-ai-3d-avatar-react-kiosk__container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .liya-ai-3d-avatar-react-kiosk__messages {
-    max-width: 720px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__controls {
-    padding: 48px 64px;
-  }
-}
-
-/* Çok büyük ekran (≥1920px) — daha da geniş */
-@media (min-width: 1920px) {
-  .liya-ai-3d-avatar-react-kiosk__container {
-    max-width: 1400px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__messages {
-    max-width: 860px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__controls {
-    padding: 56px 80px;
-  }
-}
-
-/* Mobil (<768px) — padding daralt, mic küçült */
-@media (max-width: 767px) {
-  .liya-ai-3d-avatar-react-kiosk__controls {
-    padding: 24px 16px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__mic {
-    width: 64px;
-    height: 64px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__messages {
-    max-height: 140px;
-    padding: 12px;
-  }
-  .liya-ai-3d-avatar-react-kiosk__close {
-    top: 16px;
-    right: 16px;
-  }
-}
-
-/* Mic Permission Banner */
-.liya-ai-3d-avatar-react-kiosk__mic-permission {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 28px;
-  background: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  max-width: 380px;
-  text-align: center;
-  animation: liya-kiosk-fade-in 0.3s ease;
-}
-
-.liya-ai-3d-avatar-react-kiosk__mic-permission-text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.liya-ai-3d-avatar-react-kiosk__mic-permission-btn {
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.liya-ai-3d-avatar-react-kiosk__mic-permission-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
-}
-
-@keyframes liya-kiosk-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Kiosk close button */
@@ -776,4 +843,145 @@
 .liya-ai-3d-avatar-react-kiosk__close:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
+}
+
+/* Mic Permission Banner — Vue ile aynı yapı */
+.liya-ai-3d-avatar-react-kiosk__mic-permission {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.85) 0%,
+    rgba(79, 70, 229, 0.9) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+  z-index: 50;
+  max-width: 90%;
+  white-space: nowrap;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-btn {
+  padding: 8px 16px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.liya-ai-3d-avatar-react-kiosk__mic-permission-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.02);
+}
+
+/* ===== KIOSK RESPONSIVE ===== */
+
+/* Mobile */
+@media (max-width: 767px) {
+  .liya-ai-3d-avatar-react-kiosk--modal
+    .liya-ai-3d-avatar-react-kiosk__container {
+    width: 100%;
+  }
+  .liya-ai-3d-avatar-react-kiosk__container {
+    padding: calc(48px + env(safe-area-inset-top, 0px)) 16px 24px;
+  }
+  .liya-ai-3d-avatar-react-kiosk__avatar {
+    width: 100%;
+  }
+  .liya-ai-3d-avatar-react-kiosk__close {
+    top: max(16px, env(safe-area-inset-top));
+    right: 16px;
+  }
+}
+
+/* 1920px — Full HD / 27" monitors */
+@media (min-width: 1920px) {
+  .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(1280px, 92%);
+  }
+  .liya-ai-3d-avatar-react-kiosk--modal
+    .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(55vw, 1100px);
+  }
+  .liya-ai-3d-avatar-react-kiosk__avatar {
+    max-height: clamp(500px, 72vh, 1500px);
+  }
+}
+
+/* 2560px — QHD / 2K */
+@media (min-width: 2560px) {
+  .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(1600px, 88%);
+  }
+  .liya-ai-3d-avatar-react-kiosk--modal
+    .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(58vw, 1400px);
+  }
+  .liya-ai-3d-avatar-react-kiosk__avatar {
+    max-height: clamp(560px, 72vh, 2000px);
+  }
+}
+
+/* 3840px — 4K UHD */
+@media (min-width: 3840px) {
+  .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(2000px, 88%);
+  }
+  .liya-ai-3d-avatar-react-kiosk--modal
+    .liya-ai-3d-avatar-react-kiosk__container {
+    width: min(50vw, 1920px);
+  }
+  .liya-ai-3d-avatar-react-kiosk__avatar {
+    max-height: clamp(640px, 72vh, 2200px);
+  }
+  .liya-ai-3d-avatar-react-kiosk__close {
+    top: 48px;
+    right: 48px;
+    padding: 16px;
+    border-radius: 16px;
+  }
 }

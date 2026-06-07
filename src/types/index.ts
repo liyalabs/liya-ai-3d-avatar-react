@@ -149,6 +149,7 @@ export interface SendMessageRequest {
   session_id?: string;
   external_session_id?: string;
   file_ids?: string[];
+  response_language?: string;  // 'tr' | 'en' | 'zh' — AI response language override
 }
 
 export interface UrlCitationAnnotation {

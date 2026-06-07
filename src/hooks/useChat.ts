@@ -16,7 +16,11 @@
 // Liya AI Chat - useChat Hook (React Version)
 import { useState, useCallback, useEffect, useMemo } from "react";
 import type { Message, SendMessageResponse } from "../types";
-import { sendMessage as apiSendMessage, getSessionHistory } from "../api";
+import {
+  sendMessage as apiSendMessage,
+  getSessionHistory,
+  uploadFile,
+} from "../api";
 
 // Global state for chat to keep it synced across components
 let globalMessages: Message[] = [];
@@ -27,6 +31,18 @@ const listeners = new Set<() => void>();
 
 function notify() {
   listeners.forEach((listener) => listener());
+}
+
+/**
+ * Reset ALL global chat state — call this when widget unmounts or
+ * credentials change, so stale session IDs don't cause 401 errors.
+ */
+export function resetGlobalChat(): void {
+  globalMessages = [];
+  globalIsLoading = false;
+  globalError = null;
+  globalCurrentSessionId = null;
+  notify();
 }
 
 export function useChat() {
@@ -66,6 +82,7 @@ export function useChat() {
     async (
       content: string,
       fileIds?: string[],
+      locale?: string,
     ): Promise<SendMessageResponse | null> => {
       if (!content.trim()) return null;
 
@@ -87,6 +104,7 @@ export function useChat() {
           content.trim(),
           globalCurrentSessionId || undefined,
           fileIds,
+          locale,
         );
 
         if (response.session_id) {
@@ -239,6 +257,23 @@ export function useChat() {
     }
   }, [getStoredSessionId]);
 
+  // File upload state
+  const [uploadedFiles, setUploadedFiles] = useState<
+    { id: string; name: string }[]
+  >([]);
+
+  const uploadFiles = useCallback(
+    async (sessionId: string): Promise<{ id: string; name: string }[]> => {
+      // Files are tracked locally; this returns the current uploaded file IDs
+      return uploadedFiles;
+    },
+    [uploadedFiles],
+  );
+
+  const clearFiles = useCallback((): void => {
+    setUploadedFiles([]);
+  }, []);
+
   const setSessionId = useCallback(
     (sessionId: string | null): void => {
       globalCurrentSessionId = sessionId;
@@ -267,5 +302,7 @@ export function useChat() {
     initFromStorage,
     getStoredSessionId,
     setSessionId,
+    uploadFiles,
+    clearFiles,
   };
 }

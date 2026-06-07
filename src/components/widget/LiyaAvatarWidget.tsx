@@ -29,8 +29,11 @@ import {
   getConfig,
   getAvatarModel,
   initializeClient,
+  reinitializeClient,
+  resetClient,
   isInitialized,
 } from "../../api";
+import { resetGlobalChat } from "../../hooks/useChat";
 import { MessageList, ChatInput } from "../shared";
 import { AvatarScene } from "../avatar";
 import { stripForTTS } from "../../utils/tts";
@@ -51,6 +54,7 @@ export interface LiyaAvatarWidgetProps {
   showBranding?: boolean;
   showVoice?: boolean;
   voiceEnabled?: boolean;
+  showFileUpload?: boolean;
   showAvatarButton?: boolean;
   avatarModelUrl?: string;
   offsetX?: number;
@@ -68,18 +72,23 @@ export interface LiyaAvatarWidgetProps {
 }
 
 export default function LiyaAvatarWidgetWrapper(props: LiyaAvatarWidgetProps) {
-  logger.log("[LiyaAvatarWidget] 🚀 Wrapper init check", {
-    hasApiKey: !!props.apiKey,
-    hasBaseUrl: !!props.baseUrl,
-    hasAssistantId: !!props.assistantId,
-    alreadyInitialized: isInitialized(),
-    baseUrl: props.baseUrl,
-    assistantId: props.assistantId,
-    liyaWidgetMode: props.liyaWidgetMode,
-  });
+  const [ready, setReady] = React.useState(false);
 
-  if (props.apiKey && props.baseUrl && props.assistantId && !isInitialized()) {
-    logger.log("[LiyaAvatarWidget] ✅ Calling initializeClient...");
+  React.useEffect(() => {
+    if (!props.apiKey || !props.baseUrl || !props.assistantId) {
+      logger.error("[LiyaAvatarWidget] ❌ Missing required props:", {
+        apiKey: !props.apiKey ? "MISSING" : "ok",
+        baseUrl: !props.baseUrl ? "MISSING" : "ok",
+        assistantId: !props.assistantId ? "MISSING" : "ok",
+      });
+      return;
+    }
+
+    // Always reset + reinit so fresh credentials are used on every mount
+    resetClient();
+    logger.log(
+      "[LiyaAvatarWidget] 🔧 Calling initializeClient with fresh credentials...",
+    );
     initializeClient({
       apiKey: props.apiKey,
       baseUrl: props.baseUrl,
@@ -94,20 +103,18 @@ export default function LiyaAvatarWidgetWrapper(props: LiyaAvatarWidgetProps) {
       "[LiyaAvatarWidget] ✅ initializeClient done, isInitialized:",
       isInitialized(),
     );
-  }
+    setReady(true);
 
-  if (!isInitialized()) {
-    logger.error("[LiyaAvatarWidget] ❌ NOT initialized! Missing:", {
-      apiKey: !props.apiKey ? "MISSING" : "ok",
-      baseUrl: !props.baseUrl ? "MISSING" : "ok",
-      assistantId: !props.assistantId ? "MISSING" : "ok",
-    });
-    return (
-      <div
-        style={{ display: "none" }}
-        data-error="LiyaAvatarWidget requires apiKey, baseUrl, and assistantId to be initialized."
-      />
-    );
+    return () => {
+      // Cleanup on unmount — reset singleton so next mount gets fresh state
+      resetClient();
+      logger.log("[LiyaAvatarWidget] 🧹 Unmounted — client reset");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.apiKey, props.baseUrl, props.assistantId]);
+
+  if (!ready) {
+    return <div style={{ display: "none" }} data-state="initializing" />;
   }
 
   return <LiyaAvatarWidget {...props} />;
@@ -126,6 +133,7 @@ function LiyaAvatarWidget({
   showBranding = true,
   showVoice = true,
   voiceEnabled = true,
+  showFileUpload = true,
   showAvatarButton = true,
   avatarModelUrl = "",
   offsetX = 20,
@@ -142,6 +150,27 @@ function LiyaAvatarWidget({
   onMessageReceived,
 }: LiyaAvatarWidgetProps) {
   const config = getConfig();
+
+  // Detect parent page language from html[lang] or navigator.language
+  const detectParentPageLanguage = useCallback((): string | undefined => {
+    const supported = ["tr", "en", "zh"];
+    // Check html[lang] attribute
+    const htmlLang = document.documentElement.lang;
+    if (htmlLang) {
+      const lang = htmlLang.split("-")[0].toLowerCase();
+      if (supported.includes(lang)) return lang;
+    }
+    // Check navigator.language
+    const navLang =
+      navigator.language ||
+      (navigator as { userLanguage?: string }).userLanguage;
+    if (navLang) {
+      const lang = navLang.split("-")[0].toLowerCase();
+      if (supported.includes(lang)) return lang;
+    }
+    return undefined;
+  }, []);
+
   const { t, translate, locale, initLocale, setLocale } = useI18n();
   const {
     messages,
@@ -150,6 +179,8 @@ function LiyaAvatarWidget({
     sendMessage,
     initFromStorage,
     loadHistory,
+    addWelcomeMessage,
+    updateWelcomeMessage,
   } = useChat();
   const {
     isRecording,
@@ -157,6 +188,7 @@ function LiyaAvatarWidget({
     transcript,
     startRecording,
     stopRecording,
+    clearTranscript,
     micPermission,
     requestMicPermission,
   } = useVoice();
@@ -173,9 +205,7 @@ function LiyaAvatarWidget({
   const [isOpen, setIsOpen] = useState(
     liyaWidgetMode !== "standard" || viewOnPageStart,
   );
-  const [isAvatarVisible, setIsAvatarVisible] = useState(
-    liyaWidgetMode !== "standard",
-  );
+  const [isAvatarVisible, setIsAvatarVisible] = useState(true);
   const [backendAvatarUrl, setBackendAvatarUrl] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPreparingSpeech, setIsPreparingSpeech] = useState(false);
@@ -186,14 +216,26 @@ function LiyaAvatarWidget({
   const [isMessageBoxVisible, setIsMessageBoxVisible] = useState(true);
   const [preparingMessageIndex, setPreparingMessageIndex] = useState(0);
   const [preparingStartTime, setPreparingStartTime] = useState(0);
+  const [uiScale, setUiScale] = useState(1.0);
+  const [kioskSize, setKioskSize] = useState({ width: 0, height: 0 });
+
+  // Welcome message: resolved from prop or i18n fallback
+  const welcomeMessageText = useMemo(
+    () => welcomeMessage || t.chat.welcomeMessage,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [welcomeMessage, locale],
+  );
 
   // Refs
+  const hasPlayedWelcomeRef = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const startTimeRef = useRef(0);
   const animFrameRef = useRef<number | null>(null);
   const preparingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const avatarSceneRef = useRef<any>(null);
+  const kioskControlsRef = useRef<HTMLDivElement | null>(null);
+  const kioskAvatarRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch avatar model from backend
   const fetchModel = useCallback(async () => {
@@ -239,7 +281,7 @@ function LiyaAvatarWidget({
       propLocale,
       currentSessionId,
     });
-    initLocale(propLocale || config.locale || "tr");
+    initLocale(propLocale || config.locale || detectParentPageLanguage());
     initFromStorage();
     if (currentSessionId) loadHistory(currentSessionId);
     fetchModel();
@@ -255,6 +297,53 @@ function LiyaAvatarWidget({
     loadHistory,
     fetchModel,
   ]);
+
+  // uiScale & kiosk avatar size — mirrors Vue's computeUiScale + computeKioskLayout
+  const computeUiScale = useCallback((): number => {
+    const w = typeof window !== "undefined" ? window.innerWidth : 1920;
+    if (w >= 3840) return 1.7;
+    if (w >= 2560) return 1.25;
+    return 1.0;
+  }, []);
+
+  const computeKioskSize = useCallback(
+    (scale: number) => {
+      if (typeof window === "undefined") return { width: 520, height: 620 };
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isModal = liyaWidgetMode === "modal_kiosk";
+      const controlsHeight = kioskControlsRef.current
+        ? kioskControlsRef.current.getBoundingClientRect().height
+        : (isMessageBoxVisible ? 360 : 200) * scale;
+      // Avatar genişliği: container - yatay padding (her iki taraf clamp(16px,2vw,48px))
+      const hPad = Math.min(48, Math.max(16, vw * 0.02));
+      const containerW = isModal
+        ? Math.min(vw * 0.5, 860) - hPad * 2
+        : Math.min(960, vw) - hPad * 2;
+      const avatarH = Math.min(
+        Math.max(200, vh - controlsHeight - 60),
+        1100 * scale,
+      );
+      return { width: Math.round(containerW), height: Math.round(avatarH) };
+    },
+    [liyaWidgetMode, isMessageBoxVisible],
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      const s = computeUiScale();
+      setUiScale(s);
+      setKioskSize(computeKioskSize(s));
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [computeUiScale, computeKioskSize]);
+
+  // Recompute kiosk size when message box visibility changes
+  useEffect(() => {
+    setKioskSize(computeKioskSize(uiScale));
+  }, [isMessageBoxVisible, uiScale, computeKioskSize]);
 
   const resolvedAvatarUrl =
     avatarModelUrl || config.avatarModelUrl || backendAvatarUrl;
@@ -333,7 +422,7 @@ function LiyaAvatarWidget({
       try {
         setIsPreparingSpeech(true);
         const res = await fetch(
-          `${config.apiUrl}/api/v1/external/avatar/speech/`,
+          `${config.baseUrl}/api/v1/external/avatar/speech/`,
           {
             method: "POST",
             headers: {
@@ -359,7 +448,7 @@ function LiyaAvatarWidget({
         setIsPreparingSpeech(false);
       }
     },
-    [config.apiUrl, config.apiKey, playAudio],
+    [config.baseUrl, config.apiKey, playAudio],
   );
 
   // Handle send
@@ -369,7 +458,7 @@ function LiyaAvatarWidget({
       try {
         logger.log("[LiyaAvatarWidget] 📤 handleSend:", msg);
         onMessageSent?.(msg);
-        const res = await sendMessage(msg);
+        const res = await sendMessage(msg, undefined, locale);
         if (res?.assistant_message?.content || res?.response) {
           const text = res.assistant_message?.content || res.response || "";
           onMessageReceived?.(text);
@@ -386,7 +475,16 @@ function LiyaAvatarWidget({
       isAvatarVisible,
       autoSpeak,
       speak,
+      locale,
     ],
+  );
+
+  // Handle suggestion click
+  const handleSuggestionClick = useCallback(
+    (suggestion: string) => {
+      handleSend(suggestion);
+    },
+    [handleSend],
   );
 
   // Handle voice transcript
@@ -396,19 +494,15 @@ function LiyaAvatarWidget({
     }
   }, [transcript, isRecording, handleSend]);
 
-  // Handle preparing messages rotation
+  // Handle preparing messages rotation — rotate every 4s (no initial 8s delay)
   useEffect(() => {
     if (isLoading || isPreparingSpeech) {
       setPreparingMessageIndex(0);
-      const now = Date.now();
-      setPreparingStartTime(now);
+      setPreparingStartTime(Date.now());
       preparingTimerRef.current = setInterval(() => {
-        const elapsed = Date.now() - now;
-        if (elapsed > 8000) {
-          setPreparingMessageIndex(
-            (prev) => (prev + 1) % t.preparingMessages.length,
-          );
-        }
+        setPreparingMessageIndex(
+          (prev) => (prev + 1) % t.preparingMessages.length,
+        );
       }, 4000);
     } else {
       if (preparingTimerRef.current) {
@@ -446,14 +540,16 @@ function LiyaAvatarWidget({
       "--liya-z-index": theme.zIndex || 9999,
       "--liya-offset-x": `${offsetX}px`,
       "--liya-offset-y": `${offsetY}px`,
+      "--liya-ui-scale": String(uiScale),
     } as React.CSSProperties;
-  }, [theme, offsetX, offsetY]);
+  }, [theme, offsetX, offsetY, uiScale]);
 
   const isFirstRender = useRef(true);
 
   // Toggle widget
   const toggle = useCallback(() => {
     const next = !isOpen;
+    logger.log(`[LiyaAvatarWidget] 🔘 toggle: ${isOpen} → ${next}`);
     setIsOpen(next);
     if (next) {
       setIsAvatarVisible(true);
@@ -463,21 +559,82 @@ function LiyaAvatarWidget({
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      if (isOpen) onOpened?.();
+      if (isOpen) {
+        onOpened?.();
+        // Play welcome on initial open (kiosk / viewOnPageStart)
+        if (
+          !hasPlayedWelcomeRef.current &&
+          messages.length === 0 &&
+          welcomeMessageText
+        ) {
+          hasPlayedWelcomeRef.current = true;
+          addWelcomeMessage(welcomeMessageText);
+          if (autoSpeak) {
+            setTimeout(() => speak(stripForTTS(welcomeMessageText)), 500);
+          }
+        }
+      }
       return;
     }
 
     if (isOpen) {
       onOpened?.();
+      // Play welcome on first open (standard mode toggle)
+      if (
+        !hasPlayedWelcomeRef.current &&
+        messages.length === 0 &&
+        welcomeMessageText
+      ) {
+        hasPlayedWelcomeRef.current = true;
+        addWelcomeMessage(welcomeMessageText);
+        if (autoSpeak) {
+          setTimeout(() => speak(stripForTTS(welcomeMessageText)), 500);
+        }
+      }
     } else {
       onClosed?.();
     }
-  }, [isOpen, onOpened, onClosed]);
+  }, [
+    isOpen,
+    onOpened,
+    onClosed,
+    welcomeMessageText,
+    addWelcomeMessage,
+    autoSpeak,
+    speak,
+    messages.length,
+  ]);
 
-  // Toggle locale
+  // Toggle locale: tr → en → zh → tr
   const toggleLocale = () => {
-    setLocale(locale === "tr" ? "en" : "tr");
+    if (locale === "tr") setLocale("en");
+    else if (locale === "en") setLocale("zh");
+    else setLocale("tr");
   };
+
+  // When locale changes: update welcome message text + re-speak if already welcomed
+  const prevLocaleRef = useRef(locale);
+  useEffect(() => {
+    if (prevLocaleRef.current === locale) return;
+    prevLocaleRef.current = locale;
+    // Update the welcome bubble in message list
+    updateWelcomeMessage(welcomeMessageText);
+    // Re-speak welcome in the new language
+    if (hasPlayedWelcomeRef.current && autoSpeak && isOpen) {
+      // Stop any current audio
+      if (audioSourceRef.current) {
+        try {
+          audioSourceRef.current.stop();
+        } catch (_) {
+          /* ignore */
+        }
+      }
+      setIsSpeaking(false);
+      setCurrentVisemes([]);
+      setTimeout(() => speak(stripForTTS(welcomeMessageText)), 300);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   // Handle replay or stop
   const handleReplayOrStop = () => {
@@ -549,124 +706,96 @@ function LiyaAvatarWidget({
     }
   };
 
+  // Kiosk mic disabled: loading / speaking / preparing sırasında (Vue parity)
+  const kioskMicDisabled = isLoading || isSpeaking || isPreparingSpeech;
+
+  // Kiosk mic toggle — Vue'daki toggleKioskListening ile birebir aynı logic
+  const toggleKioskListening = useCallback(() => {
+    if (!isVoiceSupported) return;
+    if (kioskMicDisabled) return;
+    if (isRecording) {
+      stopRecording();
+    } else {
+      // Önceki transcript'i temizle, yeni kayda başla
+      clearTranscript();
+      startRecording();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isVoiceSupported,
+    kioskMicDisabled,
+    isRecording,
+    stopRecording,
+    startRecording,
+    clearTranscript,
+  ]);
+
   // Kiosk layout
   if (isKiosk) {
+    // Kapat butonu çalışsın: isOpen false olunca kiosk de unmount edilmeli
+    if (!isOpen) return null;
+
+    const avatarW =
+      kioskAvatarRef.current?.clientWidth || kioskSize.width || 920;
+    const avatarH =
+      kioskAvatarRef.current?.clientHeight ||
+      kioskSize.height ||
+      (typeof window !== "undefined" ? window.innerHeight * 0.65 : 620);
+
     return (
       <div
         className={`liya-ai-3d-avatar-react-kiosk${liyaWidgetMode === "modal_kiosk" ? " liya-ai-3d-avatar-react-kiosk--modal" : ""}`}
         style={cssVars}
       >
-        <div className="liya-ai-3d-avatar-react-kiosk__container">
-          {/* Kapat butonu — sağ üst köşe */}
-          {closeButtonEnabled && (
-            <button
-              className="liya-ai-3d-avatar-react-kiosk__close"
-              onClick={() => setIsOpen(false)}
-              aria-label={t.kiosk?.close || "Close"}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                width="20"
-                height="20"
-              >
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-              </svg>
-            </button>
-          )}
-          <div className="liya-ai-3d-avatar-react-kiosk__scene-bg">
-            <AvatarScene
-              ref={avatarSceneRef}
-              modelUrl={resolvedAvatarUrl}
-              width={window.innerWidth}
-              height={window.innerHeight}
-              isSpeaking={isSpeaking}
-              visemes={currentVisemes}
-              currentTime={audioCurrentTime}
-              backgroundColor="transparent"
-              onLoaded={applyCurrentColors}
-            />
-          </div>
-          <div className="liya-ai-3d-avatar-react-kiosk__controls">
-            <div className="liya-ai-3d-avatar-react-kiosk__messages">
-              {kioskMessages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`liya-ai-3d-avatar-react-kiosk__message ${
-                    m.role === "user" ? "user" : "assistant"
-                  }`}
-                >
-                  {m.content}
-                </div>
-              ))}
-            </div>
+        <div className="liya-ai-3d-avatar-react-kiosk__content">
+          {/* Arka plan overlay katmanı */}
+          <div className="liya-ai-3d-avatar-react-kiosk__overlay" />
 
-            <div className="liya-ai-3d-avatar-react-kiosk__status">
-              <span
-                className={`liya-ai-3d-avatar-react-kiosk__status-dot liya-ai-3d-avatar-react-kiosk__status-dot--${kioskStatus}`}
-              />
-              <span className="liya-ai-3d-avatar-react-kiosk__status-text">
-                {kioskStatusText}
-              </span>
-              {kioskStatus !== "idle" && (
-                <button
-                  className="liya-ai-3d-avatar-react-kiosk__status-btn"
-                  onClick={handleKioskCancel}
-                  title={t.kiosk.cancel}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    width="16"
-                    height="16"
-                  >
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                  </svg>
-                </button>
-              )}
-              {kioskStatus === "idle" && (
-                <button
-                  className="liya-ai-3d-avatar-react-kiosk__status-btn"
-                  onClick={handleKioskRefresh}
-                  title={t.kiosk.refresh}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    width="16"
-                    height="16"
-                  >
-                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-                  </svg>
-                </button>
-              )}
+          <div className="liya-ai-3d-avatar-react-kiosk__container">
+            {/* Kapat butonu — sağ üst köşe */}
+            {closeButtonEnabled && (
               <button
-                className="liya-ai-3d-avatar-react-kiosk__lang-btn"
-                onClick={toggleLocale}
-                title={locale === "tr" ? "Switch to English" : "Türkçe'ye geç"}
+                className="liya-ai-3d-avatar-react-kiosk__close"
+                onClick={() => setIsOpen(false)}
+                aria-label={t.kiosk?.close || "Close"}
               >
-                <span>{locale === "tr" ? "EN" : "TR"}</span>
-              </button>
-            </div>
-
-            {/* Mic Permission Banner — sadece kiosk modunda, izin yokken */}
-            {(micPermission === "denied" || micPermission === "prompt") && (
-              <div className="liya-ai-3d-avatar-react-kiosk__mic-permission">
                 <svg
                   viewBox="0 0 24 24"
                   fill="currentColor"
-                  width="24"
-                  height="24"
+                  width="20"
+                  height="20"
                 >
-                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
-                <p className="liya-ai-3d-avatar-react-kiosk__mic-permission-text">
-                  {micPermission === "denied"
-                    ? t.kiosk?.micDenied ||
-                      "Microphone access denied. Please allow in browser settings."
-                    : t.kiosk?.micPermissionNeeded ||
-                      "Microphone permission needed"}
-                </p>
+              </button>
+            )}
+
+            {/* Mic Permission Banner — kiosk modunda, izin yokken */}
+            {(micPermission === "denied" || micPermission === "prompt") && (
+              <div className="liya-ai-3d-avatar-react-kiosk__mic-permission">
+                <div className="liya-ai-3d-avatar-react-kiosk__mic-permission-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="22"
+                    height="22"
+                  >
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                  </svg>
+                </div>
+                <div className="liya-ai-3d-avatar-react-kiosk__mic-permission-text">
+                  <span className="liya-ai-3d-avatar-react-kiosk__mic-permission-title">
+                    {micPermission === "denied"
+                      ? t.kiosk?.micDenied || "Microphone access denied"
+                      : t.kiosk?.micPermissionNeeded ||
+                        "Microphone permission needed"}
+                  </span>
+                  {micPermission === "denied" && (
+                    <span className="liya-ai-3d-avatar-react-kiosk__mic-permission-desc">
+                      Please allow in browser settings.
+                    </span>
+                  )}
+                </div>
                 {micPermission === "prompt" && (
                   <button
                     className="liya-ai-3d-avatar-react-kiosk__mic-permission-btn"
@@ -678,52 +807,173 @@ function LiyaAvatarWidget({
               </div>
             )}
 
-            <button
-              className="liya-ai-3d-avatar-react-kiosk__mic"
-              onClick={() => (isRecording ? stopRecording() : startRecording())}
+            {/* Avatar scene */}
+            <div
+              ref={kioskAvatarRef}
+              className="liya-ai-3d-avatar-react-kiosk__avatar"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                width="32"
-                height="32"
+              {/* Floating status badge — avatar üzerinde */}
+              <div
+                className={`liya-ai-3d-avatar-react-kiosk__status liya-ai-3d-avatar-react-kiosk__status--${kioskStatus}`}
               >
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-              </svg>
-            </button>
-            <p className="liya-ai-3d-avatar-react-kiosk__hint">
-              {isRecording ? t.voice.listening : t.voice.speakToMic}
-            </p>
+                <span className="liya-ai-3d-avatar-react-kiosk__status-dot" />
+                <span className="liya-ai-3d-avatar-react-kiosk__status-text">
+                  {kioskStatusText}
+                </span>
+                {kioskStatus !== "idle" && (
+                  <button
+                    className="liya-ai-3d-avatar-react-kiosk__status-btn"
+                    onClick={handleKioskCancel}
+                    title={t.kiosk.cancel}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      width="14"
+                      height="14"
+                    >
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                  </button>
+                )}
+                {kioskStatus === "idle" && (
+                  <button
+                    className="liya-ai-3d-avatar-react-kiosk__status-btn"
+                    onClick={handleKioskRefresh}
+                    title={t.kiosk.refresh}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      width="14"
+                      height="14"
+                    >
+                      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  className="liya-ai-3d-avatar-react-kiosk__status-btn liya-ai-3d-avatar-react-kiosk__lang-btn"
+                  onClick={toggleLocale}
+                  title={
+                    locale === "tr"
+                      ? "Switch to English"
+                      : locale === "en"
+                        ? "切换到中文"
+                        : "Türkçe'ye geç"
+                  }
+                >
+                  <span className="liya-ai-3d-avatar-react-kiosk__lang-text">
+                    {locale === "tr" ? "EN" : locale === "en" ? "ZH" : "TR"}
+                  </span>
+                </button>
+              </div>
 
-            <button
-              className="liya-ai-3d-avatar-react-kiosk__toggle-msg-btn"
-              onClick={() => setIsMessageBoxVisible(!isMessageBoxVisible)}
-              title={
-                isMessageBoxVisible
-                  ? t.kiosk.hideMessages
-                  : t.kiosk.showMessages
-              }
+              <AvatarScene
+                ref={avatarSceneRef}
+                modelUrl={resolvedAvatarUrl}
+                width={avatarW}
+                height={avatarH}
+                isSpeaking={isSpeaking}
+                visemes={currentVisemes}
+                currentTime={audioCurrentTime}
+                backgroundColor="transparent"
+                onLoaded={applyCurrentColors}
+              />
+            </div>
+
+            {/* Controls — bottom */}
+            <div
+              ref={kioskControlsRef}
+              className="liya-ai-3d-avatar-react-kiosk__controls"
             >
-              {isMessageBoxVisible ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  width="20"
-                  height="20"
-                >
-                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                </svg>
-              ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  width="20"
-                  height="20"
-                >
-                  <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-3.31 0-6-2.69-6-6 0-.79.2-1.53.53-2.2zm7.31-7.31l2.57 2.57c1.77-1.45 4.29-2.33 7.12-2.33 5.16 0 9.42 3.77 10.25 8.75.3 1.5.46 2.91.46 4.33 0 .98-.08 1.97-.23 2.96l2.85 2.85c.27-.59.48-1.45.48-2.96 0-5.59-4.21-10.26-9.75-10.9z" />
-                </svg>
+              {/* Message box */}
+              {isMessageBoxVisible && (
+                <div className="liya-ai-3d-avatar-react-kiosk__messages">
+                  {kioskMessages.map((m, i) => (
+                    <div
+                      key={i}
+                      className={`liya-ai-3d-avatar-react-kiosk__message liya-ai-3d-avatar-react-kiosk__message--${
+                        m.role === "user" ? "user" : "assistant"
+                      }`}
+                    >
+                      <p className="liya-ai-3d-avatar-react-kiosk__message-text">
+                        {m.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               )}
-            </button>
+
+              {/* Toggle message box */}
+
+              <button
+                className="liya-ai-3d-avatar-react-kiosk__toggle-msg-btn"
+                onClick={() => setIsMessageBoxVisible(!isMessageBoxVisible)}
+                title={
+                  isMessageBoxVisible
+                    ? t.kiosk.hideMessages
+                    : t.kiosk.showMessages
+                }
+              >
+                {isMessageBoxVisible ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="20"
+                    height="20"
+                  >
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    width="20"
+                    height="20"
+                  >
+                    <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-3.31 0-6-2.69-6-6 0-.79.2-1.53.53-2.2z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Mic button */}
+              <button
+                className={[
+                  "liya-ai-3d-avatar-react-kiosk__mic",
+                  isRecording
+                    ? "liya-ai-3d-avatar-react-kiosk__mic--active"
+                    : "",
+                  kioskMicDisabled
+                    ? "liya-ai-3d-avatar-react-kiosk__mic--disabled"
+                    : "",
+                  !isVoiceSupported
+                    ? "liya-ai-3d-avatar-react-kiosk__mic--not-supported"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={toggleKioskListening}
+                disabled={kioskMicDisabled || !isVoiceSupported}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  width="32"
+                  height="32"
+                >
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+              </button>
+              <p className="liya-ai-3d-avatar-react-kiosk__hint">
+                {isRecording
+                  ? t.voice.listening
+                  : kioskMicDisabled
+                    ? kioskStatusText
+                    : t.voice.speakToMic}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -861,9 +1111,17 @@ function LiyaAvatarWidget({
               <button
                 className="liya-ai-3d-avatar-react-widget__lang-btn"
                 onClick={toggleLocale}
-                title={locale === "tr" ? "Switch to English" : "Türkçe'ye geç"}
+                title={
+                  locale === "tr"
+                    ? "Switch to English"
+                    : locale === "en"
+                      ? "切换到中文"
+                      : "Türkçe'ye geç"
+                }
               >
-                <span>{locale === "tr" ? "EN" : "TR"}</span>
+                <span>
+                  {locale === "tr" ? "EN" : locale === "en" ? "ZH" : "TR"}
+                </span>
               </button>
 
               {/* Close Button */}
@@ -972,23 +1230,43 @@ function LiyaAvatarWidget({
             )}
           </div>
 
-          {/* Messages & Input */}
-          <MessageList messages={messages} isLoading={isLoading} />
-          <ChatInput
-            onSend={handleSend}
-            disabled={isLoading}
-            showVoice={showVoice}
-          />
+          {/* Lower Section: Chat */}
+          <div className="liya-ai-3d-avatar-react-widget__lower">
+            <MessageList
+              messages={messages}
+              isLoading={isLoading}
+              assistantName={assistantName}
+              welcomeMessage={welcomeMessage || t.chat.welcomeMessage}
+              welcomeSuggestions={
+                welcomeSuggestions.length > 0
+                  ? welcomeSuggestions
+                  : t.chat.welcomeSuggestions
+              }
+              preparingText={
+                isLoading ? t.preparingMessages[preparingMessageIndex] : ""
+              }
+              onSuggestionClick={handleSuggestionClick}
+            />
 
-          {/* Branding */}
-          {showBranding && (
-            <div className="liya-ai-3d-avatar-react-widget__branding">
-              Powered by{" "}
-              <a href="https://liyalabs.com" target="_blank" rel="noopener">
-                Liya AI
-              </a>
-            </div>
-          )}
+            <ChatInput
+              onSend={handleSend}
+              disabled={isLoading}
+              showVoice={showVoice}
+              voiceEnabled={voiceEnabled}
+              showFileUpload={showFileUpload}
+              sessionId={currentSessionId}
+            />
+
+            {/* Branding */}
+            {showBranding && (
+              <div className="liya-ai-3d-avatar-react-widget__branding">
+                {t.branding?.poweredBy || "Powered by"}{" "}
+                <a href="https://liyalabs.com" target="_blank" rel="noopener">
+                  Liya AI
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
